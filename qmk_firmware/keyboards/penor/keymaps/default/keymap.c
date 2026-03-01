@@ -1,0 +1,40 @@
+// Copyright 2023 QMK
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+// PENOR: Portable ergonomic NKRO ortholinear receiver
+
+#include QMK_KEYBOARD_H
+#include <keymap_swedish.h>
+#include <sendstring_swedish.h>
+
+
+
+enum layer_number {_MAIN = 0};
+const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+
+    // Note that this is designed as a Swedish layout!
+
+    /*
+     *             ┌─────┬─────┬─────┬─────┐           ┌─────┬─────┬─────┬─────┐
+     * ┌─────┬─────┤  W  │  F  │  P  │  B  │           │  J  │  L  │  U  │  Y  ├─────┬─────┐
+     * │ TAB │  Q  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  Ö  │  Å  │
+     * ├─────┼─────┤  R  │  S  │  T  │  G  │           │  M  │  N  │  E  │  I  ├─────┼─────┤
+     * │L-SFT│  A  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  O  │     │
+     * ├─────┼─────┤  X  │  C  │  D  │  V  │           │  K  │  H  │  ,  │  .  ├─────┼─────┤
+     * │L-CTL│  Z  ├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤ ESC │  Ä  │
+     * └─────┴─────┘  │L-ALT│S-GUI│     │SPACE│     │ENTER│     │BACKS│R-ALT│  └─────┴─────┘
+     *                └─────┴─────┴─────┴─────┘     └─────┴─────┴─────┴─────┘
+     */
+    [_MAIN] = LAYOUT(
+        KC_TAB,  SE_Q, SE_W, SE_F, SE_P, SE_B,       SE_J, SE_L, SE_U,    SE_Y,    SE_ODIA, SE_ARNG,
+        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    _______,
+        KC_LCTL, KC_Z, SE_X, SE_C, SE_D, SE_V,       SE_K, SE_H, SE_COMM, SE_DOT,  KC_ESC,  SE_ADIA,
+            KC_LALT, KC_LGUI, _______, KC_SPC,       KC_ENT, _______, KC_BSPC, KC_RALT)
+};
+
+
+
+void keyboard_post_init_user(void) {
+    // enable n-key rollover on startup
+    keymap_config.nkro = 1;
+}
