@@ -13,12 +13,12 @@
         "nkro": true
     },
     "matrix_pins": {
-        "rows": ["GP6", "GP7", "GP8", "GP9"],
-        "cols": ["GP0", "GP1", "GP2", "GP3", "GP4", "GP5"]
+        "rows": ["GP15", "GP26", "GP27", "GP28"],
+        "cols": ["GP2", "GP3", "GP4", "GP5", "GP6", "GP7"]
     },
     "split": {
         "enabled": true,
-        "soft_serial_pin": "GP10"
+        "soft_serial_pin": "GP1"
     },
     "processor": "RP2040",
     "url": "",
