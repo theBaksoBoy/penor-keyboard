@@ -21,9 +21,12 @@
 
 #define SPLIT_HAND_PIN GP29
 
+#define SPLIT_TRANSPORT_MIRROR
+#define SPLIT_SERIAL
+
 // specify the keys used for bootmagic. On the left half it is the top-left key. On the right half it is the top-right key
 #define BOOTMAGIC_ROW 0
-#define BOOTMAGIC_COLUMN 1
+#define BOOTMAGIC_COLUMN 0
 #define BOOTMAGIC_ROW_RIGHT 4
 #define BOOTMAGIC_COLUMN_RIGHT 5
 
