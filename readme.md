@@ -1,6 +1,6 @@
 # penor
 
-![penor](imgur.com image replace me!)
+![penor](./images/thumbnail.jpg)
 
 Portable Ergonomic NKRO Ortholinear Receiver. No shut up the name isn't forced at all. This is a split keyboard with each half being 6x3, with 4 thumb-keys.
 
