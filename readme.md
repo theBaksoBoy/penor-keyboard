@@ -1,5 +1,6 @@
 # PENOR
-Portable Ergonomic NKRO Ortholinear Receiver
+### Portable Ergonomic NKRO Ortholinear Receiver
+
 ![penor](./images/thumbnail.jpg)
 ## Disclaimers
 * This is just a project I made for myself, so I didn't try and make it as easy as possible for others to reproduce or anything like that. I'll try my best to write instructions as clear as possible with the time I am willing to spend on this (as I find it unlikely that anyone will see this, and thus want to actually make the keyboard).
