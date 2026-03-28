@@ -148,13 +148,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (record->event.pressed) { // if any key was pressed down
 
-        // make it possible to enter the bootloader on the right half since useful fucking bootmagic features were apparently deprecated or something
-        // hold down all the following keys on the right half to enter the bootloader: the keys in the four corners of the main grid, and the two right-most thumb keys
-        if (matrix_is_on(4, 0) && matrix_is_on(4, 5) && matrix_is_on(6, 0) && matrix_is_on(6, 5) && matrix_is_on(7, 2) && matrix_is_on(7, 3)) {
-            reset_keyboard();
-            return false;
-        }
-
         if (keycode == STENO_TOGGLE) {
             layer_invert(_STENO); // toggle the steno layer
             return false;
