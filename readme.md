@@ -23,16 +23,16 @@ Once you have done either of these the RP2040-Zero should appear in your file br
     3. Solder the last wire from **pin 0** to the leg that is next to the second leg you soldered to.
 6. If you are assembling the left half (and ONLY if it is the left half), solder a short wire from **3V3** to **pin 29**. This is to make it able to tell that it is the left half of the keyboard automatically.
 7. Solder all of the wires onto the RP2040-Zero. Remember to concider the walls to make the wires not have to make any really sharp turns by the pins. Also remember to concider how the part that will hold down the RP2040-Zero will cover up the pins at the bottom, which will thus also to some extent be like a wall that needs to be router around.
-   col0 -> 2
-   col1 -> 3
-   col2 -> 4
-   col3 -> 5
-   col4 -> 6
-   col5 -> 7
-   row0 -> pin 15
-   row1 -> pin 26
-   row2 -> pin 27
-   row3 -> pin 28
+   * col0 -> 2
+   * col1 -> 3
+   * col2 -> 4
+   * col3 -> 5
+   * col4 -> 6
+   * col5 -> 7
+   * row0 -> pin 15
+   * row1 -> pin 26
+   * row2 -> pin 27
+   * row3 -> pin 28
 8. Put the TRRS-jack by its hole in the case. Add a nut to the hole next to it, and use a bolt to screw the small 3D-printed part that holds it in place. Then put the RP2040-Zero where it should be in the case, add a nut to the 3D-printed part that holds it down, and fasten it with a bolt. If you have no clue which parts are supposed to be used for this then you can look in the FreeCAD model in this repo and see the location of all the parts.
 9. Put the PCB onto the case, making sure that no wires are getting pinched between the PCB and the case. You will most likely need some long and slim object like a chopstick to try and nudge wires away from areas that the PCB will lay on as you put the PCB on. Once there is no wobble, or at least extremely minimal wobble, you can screw the two bolts into the holes in the PCB. If you have printed the case in black like shown in the image at the top of this file then you can optionally put electrical tape onto the screw heads. It does't look absolutely perfect, but it does make it look way neater than seeing two big-ass silvery bolt heads between your keys.
 
