@@ -11,6 +11,11 @@
 
 enum layer_number {_MAIN = 0, _GAMING, _SYMBOL, _NAV, _MOUSE, _STENO};
 
+enum custom_keycodes {
+    MANUAL = SAFE_RANGE,
+    STENO_TOGGLE,
+};
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     // Note that this is designed as a Swedish layout!
@@ -29,7 +34,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_MAIN] = LAYOUT(
         KC_TAB,  SE_Q, SE_W, SE_F, SE_P, SE_B,       SE_J, SE_L, SE_U,    SE_Y,    SE_ODIA, SE_ARNG,
-        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    _______,
+        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    STENO_TOGGLE,
         KC_LCTL, KC_Z, SE_X, SE_C, SE_D, SE_V,       SE_K, SE_H, SE_COMM, SE_DOT,  KC_ESC,  SE_ADIA,
         KC_LALT, KC_LGUI, QK_TRI_LAYER_UPPER, KC_SPC,KC_ENT, QK_TRI_LAYER_LOWER, KC_BSPC, KC_RALT),
 
@@ -48,7 +53,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_GAMING] = LAYOUT(
         KC_TAB,  SE_T, SE_Q, SE_W, SE_E, SE_R,       SE_Y, SE_U, SE_I,    SE_O,    SE_P,    SE_ARNG,
-        KC_LSFT, SE_G, SE_A, SE_S, SE_D, SE_F,       SE_H, SE_J, SE_K,    SE_L,    SE_ODIA, _______,
+        KC_LSFT, SE_G, SE_A, SE_S, SE_D, SE_F,       SE_H, SE_J, SE_K,    SE_L,    SE_ODIA, STENO_TOGGLE,
         KC_LCTL, KC_B, SE_Z, SE_X, SE_C, SE_V,       SE_N, SE_M, SE_COMM, SE_DOT,  KC_ESC,  SE_ADIA,
         KC_LALT, KC_LGUI, QK_TRI_LAYER_UPPER, KC_SPC,KC_ENT, QK_TRI_LAYER_LOWER, KC_BSPC, KC_RALT),
 
@@ -77,7 +82,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *             ┌─────┬─────┬─────┬─────┐           ┌─────┬─────┬─────┬─────┐
      * ┌─────┬─────┤HOME │  ↑  │ END │  ▢↑ │           │     │INSRT│AUTOL│AUTOR├─────┬─────┐
      * │     │  ⬍↑ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  ◉  │DELAY│
-     * ├─────┼─────┤  ←  │  ↓  │  →  │  ▢↓ │           │     │ DEL │ARMUL│  .  ├─────┼─────┤
+     * ├─────┼─────┤  ←  │  ↓  │  →  │  ▢↓ │           │Ma/Ga│ DEL │ARMUL│  .  ├─────┼─────┤
      * │     │  ⬍↓ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  ▶  │     │
      * ├─────┼─────┤  2  │  3  │  4  │  5  │           │  6  │  7  │  8  │  9  ├─────┼─────┤
      * │     │  1  ├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤  0  │     │
@@ -86,7 +91,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_NAV] = LAYOUT(
         _______, KC_WH_U, KC_HOME, KC_UP, KC_END, KC_PGUP, _______, KC_INS, _______, _______, _______, _______,
-        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, KC_DEL, _______, SE_DOT, _______, _______,
+        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, TG(_GAMING), KC_DEL, _______, SE_DOT, _______, _______,
         _______, SE_1, SE_2, SE_3, SE_4, SE_5, SE_6, SE_7, SE_8, SE_9, SE_0, _______,
         _______, _______, _______, _______, _______, _______, _______, _______),
 
@@ -126,7 +131,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, SE_Q, SE_W, SE_E, SE_R, SE_T, SE_Y, SE_U, SE_I, SE_O, SE_P, SE_Z,
         _______, SE_A, SE_S, SE_D, SE_F, SE_G, SE_H, SE_J, SE_K, SE_L, SE_X, SE_B,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                          _______, _______, SE_C, SE_V, SE_N, SE_M, _______, _______),
+                          _______, _______, SE_C, SE_V, SE_N, SE_M, STENO_TOGGLE, _______),
 };
 
 
@@ -134,4 +139,27 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 void keyboard_post_init_user(void) {
     // enable n-key rollover on startup
     keymap_config.nkro = 1;
+}
+
+
+
+// do stuff whenever keys get pressed down
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+    if (record->event.pressed) { // if any key was pressed down
+
+        // make it possible to enter the bootloader on the right half since useful fucking bootmagic features were apparently deprecated or something
+        // hold down all the following keys on the right half to enter the bootloader: the keys in the four corners of the main grid, and the two right-most thumb keys
+        if (matrix_is_on(4, 0) && matrix_is_on(4, 5) && matrix_is_on(6, 0) && matrix_is_on(6, 5) && matrix_is_on(7, 2) && matrix_is_on(7, 3)) {
+            reset_keyboard();
+            return false;
+        }
+
+        if (keycode == STENO_TOGGLE) {
+            layer_invert(_STENO); // toggle the steno layer
+            return false;
+        }
+    }
+
+    return true;
 }
