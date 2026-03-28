@@ -35,6 +35,7 @@ Once you have done either of these the RP2040-Zero should appear in your file br
    * row3 -> pin 28
 8. Put the TRRS-jack by its hole in the case. Add a nut to the hole next to it, and use a bolt to screw the small 3D-printed part that holds it in place. Then put the RP2040-Zero where it should be in the case, add a nut to the 3D-printed part that holds it down, and fasten it with a bolt. If you have no clue which parts are supposed to be used for this then you can look in the FreeCAD model in this repo and see the location of all the parts.
 9. Put the PCB onto the case, making sure that no wires are getting pinched between the PCB and the case. You will most likely need some long and slim object like a chopstick to try and nudge wires away from areas that the PCB will lay on as you put the PCB on. Once there is no wobble, or at least extremely minimal wobble, you can screw the two bolts into the holes in the PCB. If you have printed the case in black like shown in the image at the top of this file then you can optionally put electrical tape onto the screw heads. It does't look absolutely perfect, but it does make it look way neater than seeing two big-ass silvery bolt heads between your keys.
+10. Do a happy little dance (IMPORTANT! Only do this if the keyboard works correctly).
 
 
 
