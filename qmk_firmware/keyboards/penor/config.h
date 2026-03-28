@@ -23,6 +23,7 @@
 
 #define SPLIT_TRANSPORT_MIRROR
 #define SPLIT_SERIAL
+#define SPLIT_USB_DETECT
 
 // specify the keys used for bootmagic. On the left half it is the top-left key. On the right half it is the top-right key
 #define BOOTMAGIC_ROW 0
