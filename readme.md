@@ -58,4 +58,5 @@ TEMP: mention how models need to be mirrored, mention pausing prints for nuts, m
 
 ## Compiling firmwre
 Make sure that your working directory is the qmk firmware directory, and then run
+
     make penor:default
