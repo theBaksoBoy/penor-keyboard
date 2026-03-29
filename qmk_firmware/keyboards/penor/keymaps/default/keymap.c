@@ -12,9 +12,19 @@
 enum layer_number {_MAIN = 0, _GAMING, _SYMBOL, _NAV, _MOUSE, _STENO};
 
 enum custom_keycodes {
-    MANUAL = SAFE_RANGE,
-    STENO_TOGGLE,
+    CK_MANUAL = SAFE_RANGE,
+    CK_STENO_TOGGLE,
+    CK_KEY_MULTIPLICATION,
+    CK_MACRO_DELAY,
 };
+
+
+
+bool key_multiplication_mode_active = false; // are you in the mode where you type out numbers to determine how many times a key should repeat?
+unsigned int key_multiplication_count = 0; // how many times should a key be made to repeat?
+#define MAX_KEY_MULTIPLICATION_COUNT 100
+
+
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -34,7 +44,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_MAIN] = LAYOUT(
         KC_TAB,  SE_Q, SE_W, SE_F, SE_P, SE_B,       SE_J, SE_L, SE_U,    SE_Y,    SE_ODIA, SE_ARNG,
-        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    STENO_TOGGLE,
+        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    CK_STENO_TOGGLE,
         KC_LCTL, KC_Z, SE_X, SE_C, SE_D, SE_V,       SE_K, SE_H, SE_COMM, SE_DOT,  KC_ESC,  SE_ADIA,
         KC_LALT, KC_LGUI, QK_TRI_LAYER_UPPER, KC_SPC,KC_ENT, QK_TRI_LAYER_LOWER, KC_BSPC, KC_RALT),
 
@@ -53,7 +63,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_GAMING] = LAYOUT(
         KC_TAB,  SE_T, SE_Q, SE_W, SE_E, SE_R,       SE_Y, SE_U, SE_I,    SE_O,    SE_P,    SE_ARNG,
-        KC_LSFT, SE_G, SE_A, SE_S, SE_D, SE_F,       SE_H, SE_J, SE_K,    SE_L,    SE_ODIA, STENO_TOGGLE,
+        KC_LSFT, SE_G, SE_A, SE_S, SE_D, SE_F,       SE_H, SE_J, SE_K,    SE_L,    SE_ODIA, CK_STENO_TOGGLE,
         KC_LCTL, KC_B, SE_Z, SE_X, SE_C, SE_V,       SE_N, SE_M, SE_COMM, SE_DOT,  KC_ESC,  SE_ADIA,
         KC_LALT, KC_LGUI, QK_TRI_LAYER_UPPER, KC_SPC,KC_ENT, QK_TRI_LAYER_LOWER, KC_BSPC, KC_RALT),
 
@@ -80,9 +90,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ────────────────────────────────────────────────────────────────────────────────────────────
     /* NAV
      *             ┌─────┬─────┬─────┬─────┐           ┌─────┬─────┬─────┬─────┐
-     * ┌─────┬─────┤HOME │  ↑  │ END │  ▢↑ │           │     │INSRT│AUTOL│AUTOR├─────┬─────┐
+     * ┌─────┬─────┤HOME │  ↑  │ END │  ▢↑ │           │     │INSRT│     │     ├─────┬─────┐
      * │     │  ⬍↑ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  ◉  │DELAY│
-     * ├─────┼─────┤  ←  │  ↓  │  →  │  ▢↓ │           │Ma/Ga│ DEL │ARMUL│  .  ├─────┼─────┤
+     * ├─────┼─────┤  ←  │  ↓  │  →  │  ▢↓ │           │Ma/Ga│ DEL │KEYML│  .  ├─────┼─────┤
      * │     │  ⬍↓ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  ▶  │     │
      * ├─────┼─────┤  2  │  3  │  4  │  5  │           │  6  │  7  │  8  │  9  ├─────┼─────┤
      * │     │  1  ├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤  0  │     │
@@ -90,8 +100,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                └─────┴─────┴─────┴─────┘     └─────┴─────┴─────┴─────┘
      */
     [_NAV] = LAYOUT(
-        _______, KC_WH_U, KC_HOME, KC_UP, KC_END, KC_PGUP, _______, KC_INS, _______, _______, _______, _______,
-        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, KC_DEL, _______, SE_DOT, _______, _______,
+        _______, KC_WH_U, KC_HOME, KC_UP, KC_END, KC_PGUP, _______, KC_INS, _______, _______, _______, CK_MACRO_DELAY,
+        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, KC_DEL, CK_KEY_MULTIPLICATION, SE_DOT, _______, _______,
         _______, SE_1, SE_2, SE_3, SE_4, SE_5, SE_6, SE_7, SE_8, SE_9, SE_0, _______,
         _______, _______, _______, _______, _______, _______, _______, _______),
 
@@ -131,8 +141,60 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, SE_Q, SE_W, SE_E, SE_R, SE_T, SE_Y, SE_U, SE_I, SE_O, SE_P, SE_Z,
         _______, SE_A, SE_S, SE_D, SE_F, SE_G, SE_H, SE_J, SE_K, SE_L, SE_X, SE_B,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                          _______, _______, SE_C, SE_V, SE_N, SE_M, STENO_TOGGLE, _______),
+                          _______, _______, SE_C, SE_V, SE_N, SE_M, CK_STENO_TOGGLE, _______),
 };
+
+
+
+void fixed_tap_code(uint16_t keycode) {
+    switch (keycode) {
+
+        // if not a special keycode that need extra functionality to work then just register the keycode directly or whatever
+        default:
+            tap_code(keycode);
+            break;
+
+        // wait for 0.25 seconds when getting to this keycode. Used when macros need a delay between presses to for example wait for animations to finish first
+        case CK_MACRO_DELAY:
+            wait_ms(250);
+            break;
+
+        // Swedish keycodes for characters don't work as they do special logic like holding down shift whilst pressing 6 and shit like that which doesn't work in tap_code().
+        case SE_AMPR: SEND_STRING("&"); break;
+        case SE_PIPE: SEND_STRING("|"); break;
+        case SE_CIRC: SEND_STRING("^"); break;
+        case SE_LABK: SEND_STRING("<"); break;
+        case SE_LCBR: SEND_STRING("{"); break;
+        case SE_RCBR: SEND_STRING("}"); break;
+        case SE_RABK: SEND_STRING(">"); break;
+        case SE_MINS: SEND_STRING("-"); break;
+        case SE_PLUS: SEND_STRING("+"); break;
+        case SE_GRV: SEND_STRING("`"); break;
+        case SE_ACUT: SEND_STRING("´"); break;
+        case SE_HASH: SEND_STRING("#"); break;
+        case SE_QUOT: SEND_STRING("'"); break;
+        case SE_BSLS: SEND_STRING("\\"); break;
+        case SE_DOT: SEND_STRING("."); break;
+        case SE_LPRN: SEND_STRING("("); break;
+        case SE_RPRN: SEND_STRING(")"); break;
+        case SE_SCLN: SEND_STRING(";"); break;
+        case SE_SLSH: SEND_STRING("/"); break;
+        case SE_ASTR: SEND_STRING("*"); break;
+        case SE_EXLM: SEND_STRING("!"); break;
+        case SE_DLR: SEND_STRING("$"); break;
+        case SE_PERC: SEND_STRING("%"); break;
+        case SE_DQUO: SEND_STRING("\""); break;
+        case SE_TILD: SEND_STRING("~"); break;
+        case SE_COMM: SEND_STRING(","); break;
+        case SE_LBRC: SEND_STRING("["); break;
+        case SE_RBRC: SEND_STRING("]"); break;
+        case SE_COLN: SEND_STRING(":"); break;
+        case SE_UNDS: SEND_STRING("_"); break;
+        case SE_EQL: SEND_STRING("="); break;
+        case SE_QUES: SEND_STRING("?"); break;
+        case SE_AT: SEND_STRING("@"); break;
+    }
+}
 
 
 
@@ -148,8 +210,51 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (record->event.pressed) { // if any key was pressed down
 
-        if (keycode == STENO_TOGGLE) {
+
+
+        if (key_multiplication_mode_active) {
+            // cancel the mode if ESC is pressed
+            if (keycode == KC_ESC) {
+                key_multiplication_mode_active = false;
+                return false;
+            }
+
+            // increase the key multiplication count if numbers are typed
+            if ((keycode >= KC_1 && keycode <= KC_9) || keycode == KC_0) {
+                unsigned int digit = (keycode == KC_0) ? 0 : (keycode - KC_1 + 1);
+                key_multiplication_count = key_multiplication_count * 10 + digit;
+                return false;
+            }
+
+            // if both if-checks failed then the user pressed a key that should be multiplied
+
+            // cancel if the count is higher than the max allowed count
+            if (key_multiplication_count > MAX_KEY_MULTIPLICATION_COUNT) {
+                key_multiplication_mode_active = false;
+                return false;
+            }
+
+            // if you start holding down shift for example, then the key multiplication mode should ignore that, so that you can hold keys like shift as keys are being mulitplied
+            if (IS_MODIFIER_KEYCODE(keycode)) return true;
+
+            // multiply the key
+            for (int i = 0; i < key_multiplication_count; i++) {
+                fixed_tap_code(keycode);
+            }
+            key_multiplication_mode_active = false;
+            return false;
+        }
+
+
+
+        if (keycode == CK_STENO_TOGGLE) {
             layer_invert(_STENO); // toggle the steno layer
+            return false;
+        }
+
+        if (keycode == CK_KEY_MULTIPLICATION) {
+            key_multiplication_mode_active = true;
+            key_multiplication_count = 0;
             return false;
         }
     }
