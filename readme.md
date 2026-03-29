@@ -12,6 +12,25 @@
 * **After assembly**: (this works for each individual side) hold down the key in the corner that is closest to the USB-port as you are plugging the USB in.
 Once you have done either of these the RP2040-Zero should appear in your file browser. Open it and place your desired firmware (.uf2 file) there, which will then flash it.
 
+## Bill of materials
+Note that this list will be for all the materials needed to create both halves of the keyboard
+* 3D-printed parts. More info in the "3D-printing" section
+* 1 TRRS cable
+* 2 TRRS-jacks
+* 2 RP2040-Zeros
+* 44 THT diodes (1N4148)
+* at least around 2-3 meters of loose wire (AWG30 worked pretty well for me)
+* 44 Kailh Choc switches and keycaps. V1 switches are definitely compatible, but I don't know if V2 switches are or not. It's not impossible though, you would have to check the KiCad project or the gerber file of the PCB.
+* 4 tenting feet. Not sure what they are called but I at least bought mine from here https://keyboard-hoarders.com/products/tenting-feet
+* 4 anti-slip pads. The one included with the tenting feet from the link above are sadly too large, so I went with ones that I specifically had laying around. They were around 2.7 mm tall, and 8.5 mm in diameter. If they are a bit taller then that is fine, but its best if it isn't shorter. The diameter should probably at max be 9 mm.
+* 8 M4 nuts
+* 4 10 mm long M4 bolts
+* 4 roughly 7 mm long M4 bolts. I just bought 10 mm long ones and cut them down extremely sloppily with a metal saw. As long as they are short enough that they can be screwed down where the PCB lies to the hole in the case without hitting the bottom, and whilst still being long enough to lock with the nut in there then its good. I don't know if this is part of the ISO standard or not, but the bolts should be the type that has a circular head that you screw down with a screwdriver. The diameter of the head can't be more than 8 mm.
+* 2 PCB plates. The single design of the PCB in this repo works for both for the left and right side of the keyboard, as you just have to flip it around. Order the PCB using the gerber file in this repo and make sure that its thickness is 1.6 mm (this is the most common PCB thickness).
+
+## 3D-printing
+TEMP: mention how models need to be mirrored, mention pausing prints for nuts, mention printing logos and the video you followed for that
+
 ## Assembly instructions
 1. Before assembling anything you should already flash the firmware to BOTH of your RP2040-Zeros, as it contains logic for allowing to enter the bootloader without the usage of the boot button which won't be acessible in the finished assembly. Just hold down the boot button whilst plugging it into your computer, and it should appear in your file manager. Place the .uf2 file from this repo (or compile the firmware yourself) into the RP2040-Zeros. If your RP2040-Zeros has "perferations" on the edges from when it was snapped of from a larger board then you should sand these down so that the edges of the board are flat, as otherwise they won't fit properly in the case.
 2. Solder all the diodes to the PCB. Remember to look at the icons on the PCB that specify what direction the diodes should have so that you don't acidentally assemble some in the wrong direction, as sometimes the direction is different from what you might expect (almost all point downwards, however a few point up). Once soldered, clip the legs so that they are pretty short, so that they fit for the next step.
@@ -37,23 +56,6 @@ Once you have done either of these the RP2040-Zero should appear in your file br
 9. Put the PCB onto the case, making sure that no wires are getting pinched between the PCB and the case. You will most likely need some long and slim object like a chopstick to try and nudge wires away from areas that the PCB will lay on as you put the PCB on. Once there is no wobble, or at least extremely minimal wobble, you can screw the two bolts into the holes in the PCB. If you have printed the case in black like shown in the image at the top of this file then you can optionally put electrical tape onto the screw heads. It does't look absolutely perfect, but it does make it look way neater than seeing two big-ass silvery bolt heads between your keys.
 10. Do a happy little dance (IMPORTANT! Only do this if the keyboard works correctly).
 
-
-
-
-
-
-
-----------
-OLD CONTENTS. NOT DONE WITH THE README YET.
-
-* Hardware Supported: idfk what I'm supposed to write here. It was designed to use a RP2040-Zero with a TRRS-jack, khali choc switches, and those THT diode things. You also need some wire so that you can bridge the MCU to the PCB as they are seperate. You also probably want a 3D-printer so that you can print the case. Also it is designed to use tenting feet, and also some small anti-slip rubber bead thingimabobs (remember to mention the nuts and bolts you got, and the lengths and how you had to cut them)
-
-Make example for this keyboard (after setting up your build environment):
-
+## Compiling firmwre
+Make sure that your working directory is the qmk firmware directory, and then run
     make penor:default
-
-Flashing example for this keyboard:
-
-    make penor:default:flash
-
-See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
