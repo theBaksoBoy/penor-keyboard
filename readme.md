@@ -48,12 +48,12 @@ The following files will be found in case/models/
     3. Solder the last wire from **pin 0** to the leg that is next to the second leg you soldered to.
 6. If you are assembling the left half (and ONLY if it is the left half), solder a short wire from **3V3** to **pin 29**. This is to make it able to tell that it is the left half of the keyboard automatically.
 7. Solder all of the wires onto the RP2040-Zero. Remember to concider the walls to make the wires not have to make any really sharp turns by the pins. Also remember to concider how the part that will hold down the RP2040-Zero will cover up the pins at the bottom, which will thus also to some extent be like a wall that needs to be router around.
-   * col0 -> 2
-   * col1 -> 3
-   * col2 -> 4
-   * col3 -> 5
-   * col4 -> 6
-   * col5 -> 7
+   * col0 -> pin 2
+   * col1 -> pin 3
+   * col2 -> pin 4
+   * col3 -> pin 5
+   * col4 -> pin 6
+   * col5 -> pin 7
    * row0 -> pin 15
    * row1 -> pin 26
    * row2 -> pin 27
