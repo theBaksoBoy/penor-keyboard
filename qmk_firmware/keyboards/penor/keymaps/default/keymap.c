@@ -24,6 +24,11 @@ bool key_multiplication_mode_active = false; // are you in the mode where you ty
 unsigned int key_multiplication_count = 0; // how many times should a key be made to repeat?
 #define MAX_KEY_MULTIPLICATION_COUNT 100
 
+int auto_clicker_click_count = 0; // if 0 then don't click. if > 0 then click and decrement value. if < 0 then keep clicking endlessly
+uint16_t auto_clicker_timer = 0;
+unsigned int auto_clicker_button = 1; // what mouse button should the auto clicker use? 1 == KC_BTN1, 2 == KC_BTN2, 3 == KC_BTN3
+#define AUTO_CLICKER_MILLISECONDS_PER_CLICK 34 // 30 clicks per second
+
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -247,6 +252,16 @@ bool KeyMultiplicationModeLogic(uint16_t keycode) {
     // ignore stuff like layer changes. You don't want it to mulitply a layer change because wtf is the benifit of that?
     if (IsIgnoredDuringRecording(keycode)) return true;
 
+    // special logic for if it is a mouse button
+    if (keycode == KC_BTN1 || keycode == KC_BTN2 || keycode == KC_BTN3) {
+        if (keycode == KC_BTN1) auto_clicker_button = 1;
+        if (keycode == KC_BTN2) auto_clicker_button = 2;
+        if (keycode == KC_BTN3) auto_clicker_button = 3;
+        auto_clicker_click_count = (key_multiplication_count == 0) ? -1 : key_multiplication_count;
+        key_multiplication_mode_active = false;
+        return false;
+    }
+
     // multiply the key
     for (int i = 0; i < key_multiplication_count; i++) {
         fixed_tap_code(keycode);
@@ -260,6 +275,25 @@ bool KeyMultiplicationModeLogic(uint16_t keycode) {
 void keyboard_post_init_user(void) {
     // enable n-key rollover on startup
     keymap_config.nkro = 1;
+}
+
+
+
+// stuff that is run constantly in a loop. Make sure to not make this function very intensive as it will easily slow down your entire keyboard!
+// it should be fine to add anything as long as it first does a check to see if it should be run or not. If you need some logic to actually always run on a loop
+// then concider using a timer to make the logic only run for instance once every 1000 milliseconds
+void matrix_scan_user(void) {
+
+    if (auto_clicker_click_count != 0 && timer_elapsed(auto_clicker_timer) >= AUTO_CLICKER_MILLISECONDS_PER_CLICK) {
+        switch (auto_clicker_button) {
+            case 1: tap_code(KC_BTN1); break;
+            case 2: tap_code(KC_BTN2); break;
+            case 3: tap_code(KC_BTN3); break;
+        }
+        if (auto_clicker_click_count > 0)
+            auto_clicker_click_count--;
+        auto_clicker_timer = timer_read(); // reset timer
+    }
 }
 
 
@@ -279,7 +313,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             key_multiplication_count = 0;
             return false;
         }
-
+        if (keycode == KC_BTN1 || keycode == KC_BTN2 || keycode == KC_BTN3) {
+            if (auto_clicker_click_count != 0) {
+                auto_clicker_click_count = 0;
+                return false;
+            }
+        }
 
         if (keycode == CK_STENO_TOGGLE) {
             layer_invert(_STENO); // toggle the steno layer
