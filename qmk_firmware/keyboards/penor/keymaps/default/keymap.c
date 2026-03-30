@@ -101,7 +101,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_NAV] = LAYOUT(
         _______, KC_WH_U, KC_HOME, KC_UP, KC_END, KC_PGUP, _______, KC_INS, _______, _______, _______, CK_MACRO_DELAY,
-        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, KC_DEL, CK_KEY_MULTIPLICATION, SE_DOT, _______, _______,
+        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, TG(_GAMING), KC_DEL, CK_KEY_MULTIPLICATION, SE_DOT, _______, _______,
         _______, SE_1, SE_2, SE_3, SE_4, SE_5, SE_6, SE_7, SE_8, SE_9, SE_0, _______,
         _______, _______, _______, _______, _______, _______, _______, _______),
 
@@ -198,6 +198,65 @@ void fixed_tap_code(uint16_t keycode) {
 
 
 
+// keys that shouldn't be recorded such as layer switches
+bool IsIgnoredDuringRecording(uint16_t keycode) {
+
+    // TG(layer)
+    if (QK_TOGGLE_LAYER <= keycode && keycode <= QK_TOGGLE_LAYER_MAX) {
+        return true;
+    }
+
+    // other keycodes
+    switch (keycode) {
+        default:
+            return false;
+        case QK_TRI_LAYER_UPPER:
+        case QK_TRI_LAYER_LOWER:
+        case CK_STENO_TOGGLE:
+            return true;
+    }
+}
+
+
+
+bool KeyMultiplicationModeLogic(uint16_t keycode) {
+
+    // cancel the mode if ESC is pressed
+    if (keycode == KC_ESC) {
+        key_multiplication_mode_active = false;
+        return false;
+    }
+
+    // increase the key multiplication count if numbers are typed
+    if ((keycode >= KC_1 && keycode <= KC_9) || keycode == KC_0) {
+        unsigned int digit = (keycode == KC_0) ? 0 : (keycode - KC_1 + 1);
+        key_multiplication_count = key_multiplication_count * 10 + digit;
+        return false;
+    }
+
+    // if both if-checks failed then the user pressed a key that should be multiplied
+
+    // cancel if the count is higher than the max allowed count
+    if (key_multiplication_count > MAX_KEY_MULTIPLICATION_COUNT) {
+        key_multiplication_mode_active = false;
+        return false;
+    }
+
+    // if you start holding down shift for example, then the key multiplication mode should ignore that, so that you can hold keys like shift as keys are being mulitplied
+    if (IS_MODIFIER_KEYCODE(keycode)) return true;
+    // ignore stuff like layer changes. You don't want it to mulitply a layer change because wtf is the benifit of that?
+    if (IsIgnoredDuringRecording(keycode)) return true;
+
+    // multiply the key
+    for (int i = 0; i < key_multiplication_count; i++) {
+        fixed_tap_code(keycode);
+    }
+    key_multiplication_mode_active = false;
+    return false;
+}
+
+
+
 void keyboard_post_init_user(void) {
     // enable n-key rollover on startup
     keymap_config.nkro = 1;
@@ -213,38 +272,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 
         if (key_multiplication_mode_active) {
-            // cancel the mode if ESC is pressed
-            if (keycode == KC_ESC) {
-                key_multiplication_mode_active = false;
-                return false;
-            }
-
-            // increase the key multiplication count if numbers are typed
-            if ((keycode >= KC_1 && keycode <= KC_9) || keycode == KC_0) {
-                unsigned int digit = (keycode == KC_0) ? 0 : (keycode - KC_1 + 1);
-                key_multiplication_count = key_multiplication_count * 10 + digit;
-                return false;
-            }
-
-            // if both if-checks failed then the user pressed a key that should be multiplied
-
-            // cancel if the count is higher than the max allowed count
-            if (key_multiplication_count > MAX_KEY_MULTIPLICATION_COUNT) {
-                key_multiplication_mode_active = false;
-                return false;
-            }
-
-            // if you start holding down shift for example, then the key multiplication mode should ignore that, so that you can hold keys like shift as keys are being mulitplied
-            if (IS_MODIFIER_KEYCODE(keycode)) return true;
-
-            // multiply the key
-            for (int i = 0; i < key_multiplication_count; i++) {
-                fixed_tap_code(keycode);
-            }
-            key_multiplication_mode_active = false;
+            return KeyMultiplicationModeLogic(keycode);
+        }
+        if (keycode == CK_KEY_MULTIPLICATION) {
+            key_multiplication_mode_active = true;
+            key_multiplication_count = 0;
             return false;
         }
-
 
 
         if (keycode == CK_STENO_TOGGLE) {
@@ -252,11 +286,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         }
 
-        if (keycode == CK_KEY_MULTIPLICATION) {
-            key_multiplication_mode_active = true;
-            key_multiplication_count = 0;
-            return false;
-        }
+
     }
 
     return true;
