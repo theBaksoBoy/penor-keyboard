@@ -116,7 +116,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *             ┌─────┬─────┬─────┬─────┐           ┌─────┬─────┬─────┬─────┐
      * ┌─────┬─────┤ ◀▮  │  ▮↑ │  ▮▶ │  ▢↑ │           │Ma/Ga│PRSCR│SCRLL│PAUS ├─────┬─────┐
      * │     │  ⬍↑ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤     │ MAN │
-     * ├─────┼─────┤ ←▮  │  ▮↓ │  ▮→ │  ▢↓ │           │RESET│  ◧  │  ◨  │  ▣  ├─────┼─────┤
+     * ├─────┼─────┤ ←▮  │  ▮↓ │  ▮→ │  ▢↓ │           │     │  ◧  │  ◨  │  ▣  ├─────┼─────┤
      * │L-SFT│  ⬍↓ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤     │ F12 │
      * ├─────┼─────┤ F2  │ F3  │ F4  │ F5  │           │ F6  │ F7  │ F8  │ F9  ├─────┼─────┤
      * │L-CTL│ F1  ├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤ F10 │ F11 │
@@ -322,6 +322,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         if (keycode == CK_STENO_TOGGLE) {
             layer_invert(_STENO); // toggle the steno layer
+            // do PHROLG to toggle Plover
+            register_code(KC_E); register_code(KC_R); register_code(KC_F); register_code(KC_V); register_code(KC_O); register_code(KC_L);
+            unregister_code(KC_E); unregister_code(KC_R); unregister_code(KC_F); unregister_code(KC_V); unregister_code(KC_O); unregister_code(KC_L);
             return false;
         }
 
