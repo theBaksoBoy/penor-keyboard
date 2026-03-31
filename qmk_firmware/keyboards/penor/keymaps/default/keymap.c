@@ -15,6 +15,7 @@ enum custom_keycodes {
     CK_MANUAL = SAFE_RANGE,
     CK_STENO_TOGGLE,
     CK_KEY_MULTIPLICATION,
+    CK_UNICODE_MODE,
     CK_MACRO_DELAY,
 };
 
@@ -28,6 +29,10 @@ int auto_clicker_click_count = 0; // if 0 then don't click. if > 0 then click an
 uint16_t auto_clicker_timer = 0;
 unsigned int auto_clicker_button = 1; // what mouse button should the auto clicker use? 1 == KC_BTN1, 2 == KC_BTN2, 3 == KC_BTN3
 #define AUTO_CLICKER_MILLISECONDS_PER_CLICK 34 // 30 clicks per second
+
+bool unicode_mode = false; // when true your key presses get recorded, and then converted into a unicode character if a valid match exists
+char recorded_unicode_string[32];
+uint8_t recorded_unicode_string_index = 0;
 
 
 
@@ -115,7 +120,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* MOUSE
      *             ┌─────┬─────┬─────┬─────┐           ┌─────┬─────┬─────┬─────┐
      * ┌─────┬─────┤ ◀▮  │  ▮↑ │  ▮▶ │  ▢↑ │           │Ma/Ga│PRSCR│SCRLL│PAUS ├─────┬─────┐
-     * │     │  ⬍↑ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤     │ MAN │
+     * │     │  ⬍↑ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤UNCOD│ MAN │
      * ├─────┼─────┤ ←▮  │  ▮↓ │  ▮→ │  ▢↓ │           │     │  ◧  │  ◨  │  ▣  ├─────┼─────┤
      * │L-SFT│  ⬍↓ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤     │ F12 │
      * ├─────┼─────┤ F2  │ F3  │ F4  │ F5  │           │ F6  │ F7  │ F8  │ F9  ├─────┼─────┤
@@ -124,7 +129,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                └─────┴─────┴─────┴─────┘     └─────┴─────┴─────┴─────┘
      */
     [_MOUSE] = LAYOUT(
-        _______, KC_WH_U, KC_BTN4, KC_MS_U, KC_BTN5, KC_PGUP, TG(_GAMING), KC_PSCR, KC_SCRL, KC_PAUS, _______, _______,
+        _______, KC_WH_U, KC_BTN4, KC_MS_U, KC_BTN5, KC_PGUP, TG(_GAMING), KC_PSCR, KC_SCRL, KC_PAUS, CK_UNICODE_MODE, CK_MANUAL,
         KC_LSFT, KC_WH_D, KC_MS_L, KC_MS_D, KC_MS_R, KC_PGDN, _______, KC_BTN1, KC_BTN2, KC_BTN3, _______, KC_F12,
         KC_LCTL, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11,
         _______, _______, _______, _______, _______, _______, _______, _______),
@@ -272,6 +277,145 @@ bool KeyMultiplicationModeLogic(uint16_t keycode) {
 
 
 
+// see if recorded_unicode_string matches any of the specified strings. If it does then send the output string as a unicode character and return true
+void MatchAndSendUnicode(const char *output, const char *candidates[], int count) {
+    for (int i = 0; i < count; i++) {
+        if (strcmp(recorded_unicode_string, candidates[i]) == 0) {
+
+            clear_mods(); // clear mods to make sure that stuff sends correctly
+            register_code(KC_LCTL); // LCTL+LSFT+u to activate unicode input on linux
+            register_code(KC_LSFT);
+            tap_code(KC_U);
+            unregister_code(KC_LCTL);
+            unregister_code(KC_LSFT);
+
+            send_string(output);
+
+            tap_code(KC_SPACE); // presses space to confirm unicode
+        }
+    }
+}
+// make a macro for using MatchAndSendUnicode way easier, where you can just do MATCH_AND_SEND(unicode_id, match1, match2, match3, ...)
+#define MATCH_SEND_UNICODE(output, ...) \
+    MatchAndSendUnicode(output, \
+        (const char*[]){__VA_ARGS__}, \
+        sizeof((const char*[]){__VA_ARGS__}) / sizeof(const char*))
+
+
+
+void ParseUnicodeString(void) {
+
+    // this site categorizes all unicode characters https://symbl.cc/en/unicode-table
+
+    // superscript and subscript for numbers
+    /* ⁰ */ MATCH_SEND_UNICODE("2070",   "0", "super0"); /* ₀ */ MATCH_SEND_UNICODE("2080",   "sub0");
+    /* ¹ */ MATCH_SEND_UNICODE("b9",   "1", "super1");   /* ₁ */ MATCH_SEND_UNICODE("2081",   "sub1");
+    /* ² */ MATCH_SEND_UNICODE("b2",   "2", "super2");   /* ₂ */ MATCH_SEND_UNICODE("2082",   "sub2");
+    /* ³ */ MATCH_SEND_UNICODE("b3",   "3", "super3");   /* ₃ */ MATCH_SEND_UNICODE("2083",   "sub3");
+    /* ⁴ */ MATCH_SEND_UNICODE("2074",   "4", "super4"); /* ₄ */ MATCH_SEND_UNICODE("2084",   "sub4");
+    /* ⁵ */ MATCH_SEND_UNICODE("2075",   "5", "super5"); /* ₅ */ MATCH_SEND_UNICODE("2085",   "sub5");
+    /* ⁶ */ MATCH_SEND_UNICODE("2076",   "6", "super6"); /* ₆ */ MATCH_SEND_UNICODE("2086",   "sub6");
+    /* ⁷ */ MATCH_SEND_UNICODE("2077",   "7", "super7"); /* ₇ */ MATCH_SEND_UNICODE("2087",   "sub7");
+    /* ⁸ */ MATCH_SEND_UNICODE("2078",   "8", "super8"); /* ₈ */ MATCH_SEND_UNICODE("2088",   "sub8");
+    /* ⁹ */ MATCH_SEND_UNICODE("2079",   "9", "super9"); /* ₉ */ MATCH_SEND_UNICODE("2089",   "sub9");
+
+    // math
+    /* ∏ */ MATCH_SEND_UNICODE("220f",   "prod", "product");
+    /* ∑ */ MATCH_SEND_UNICODE("2211",   "sum");
+    /* ∎ */ MATCH_SEND_UNICODE("220e",   "qed");
+    /* √ */ MATCH_SEND_UNICODE("221a",   "sqrt", "root");
+    /* ∞ */ MATCH_SEND_UNICODE("221e",   "infty", "inf", "infinity");
+    /* ∩ */ MATCH_SEND_UNICODE("2229",   "cap", "and", "intersect", "intersection");
+    /* ∪ */ MATCH_SEND_UNICODE("222a",   "cup", "or", "union");
+    /* ∫ */ MATCH_SEND_UNICODE("222b",   "int", "integral");
+    /* ∬ */ MATCH_SEND_UNICODE("222c",   "iint", "iintegral");
+    /* ∭ */ MATCH_SEND_UNICODE("222d",   "iiint", "iiintegral");
+    /* ≈ */ MATCH_SEND_UNICODE("2248",   "approx", "roughly", "about", "approximately");
+    /* ≠ */ MATCH_SEND_UNICODE("2260",   "neq", "not", "isnot", "notequal", "notequalto");
+    /* ± */ MATCH_SEND_UNICODE("b1",   "pm", "plusminus");
+
+    // greek symbols
+    /* α */ MATCH_SEND_UNICODE("3b1",   "alpha");
+    /* β */ MATCH_SEND_UNICODE("3b2",   "beta");
+    /* γ */ MATCH_SEND_UNICODE("3b3",   "gamma");
+    /* Γ */ MATCH_SEND_UNICODE("393",   "Gamma");
+    /* δ */ MATCH_SEND_UNICODE("3b4",   "delta");
+    /* Δ */ MATCH_SEND_UNICODE("394",   "Delta");
+    /* ε */ MATCH_SEND_UNICODE("3b5",   "epsilon");
+    /* ζ */ MATCH_SEND_UNICODE("3b6",   "zeta");
+    /* η */ MATCH_SEND_UNICODE("3b7",   "eta");
+    /* θ */ MATCH_SEND_UNICODE("3b8",   "theta");
+    /* Θ */ MATCH_SEND_UNICODE("398",   "Theta");
+    /* λ */ MATCH_SEND_UNICODE("3bb",   "lambda");
+    /* μ */ MATCH_SEND_UNICODE("3bc",   "mu");
+    /* π */ MATCH_SEND_UNICODE("3c0",   "pi");
+    /* Π */ MATCH_SEND_UNICODE("3a0",   "Pi");
+    /* ρ */ MATCH_SEND_UNICODE("3c1",   "rho");
+    /* σ */ MATCH_SEND_UNICODE("3c3",   "sigma");
+    /* Σ */ MATCH_SEND_UNICODE("3a3",   "Sigma");
+    /* τ */ MATCH_SEND_UNICODE("3c4",   "tau");
+    /* φ */ MATCH_SEND_UNICODE("3c6",   "phi");
+    /* Φ */ MATCH_SEND_UNICODE("3a6",   "Phi");
+    /* ψ */ MATCH_SEND_UNICODE("3c8",   "psi");
+    /* Ψ */ MATCH_SEND_UNICODE("3a8",   "Psi");
+    /* ω */ MATCH_SEND_UNICODE("3c9",   "omega");
+    /* Ω */ MATCH_SEND_UNICODE("3a9",   "Omega");
+
+    // arrows
+    /* ← */ MATCH_SEND_UNICODE("2190",   "leftarrow", "arrowleft", "larrow", "arrowl", "left", "l");
+    /* ↑ */ MATCH_SEND_UNICODE("2191",   "uparrow", "arrowup", "uarrow", "arrowu", "up", "u");
+    /* → */ MATCH_SEND_UNICODE("2192",   "rightarrow", "arrowright", "rarrow", "arrowr", "right", "r", "to");
+    /* ↓ */ MATCH_SEND_UNICODE("2193",   "downarrow", "arrowdown", "darrow", "arrowd", "down", "d");
+    /* ↔ */ MATCH_SEND_UNICODE("2194",   "leftrightarrow", "arrowleftright", "lrarrow", "arrowlr", "leftright", "lr");
+    /* ↕ */ MATCH_SEND_UNICODE("2195",   "updownarrow", "arrowupdown", "udarrow", "arrowud", "updown", "ud");
+    /* ↖ */ MATCH_SEND_UNICODE("2196",   "nwarrow");
+    /* ↗ */ MATCH_SEND_UNICODE("2197",   "nearrow");
+    /* ↘ */ MATCH_SEND_UNICODE("2198",   "searrow");
+    /* ↙ */ MATCH_SEND_UNICODE("2199",   "nwarrow");
+    /* ⇐ */ MATCH_SEND_UNICODE("21d0",   "Leftarrow", "Arrowleft", "Larrow", "ArrowL", "Left", "L");
+    /* ⇑ */ MATCH_SEND_UNICODE("21d1",   "Uparrow", "Arrowup", "Uarrow", "Arrowu", "Up", "U");
+    /* ⇒ */ MATCH_SEND_UNICODE("21d2",   "Rightarrow", "Arrowright", "Rarrow", "Arrowr", "Right", "R", "implication", "implies");
+    /* ⇓ */ MATCH_SEND_UNICODE("21d3",   "Downarrow", "Arrowdown", "Darrow", "Arrowd", "Down", "D");
+    /* ⇔ */ MATCH_SEND_UNICODE("21d4",   "Leftrightarrow", "Arrowleftright", "Lrarrow", "ArrowLR", "Leftright", "Lr", "equivalent", "equivalence");
+    /* ⇕ */ MATCH_SEND_UNICODE("21d5",   "Updownarrow", "Arrowupdown", "Udarrow", "Arrowud", "Updown", "Ud");
+
+    // misc
+    /* é */ MATCH_SEND_UNICODE("e9",   "e");
+    /* É */ MATCH_SEND_UNICODE("c9",   "E");
+    /* © */ MATCH_SEND_UNICODE("a9",   "c", "cp", "copyright");
+    /* ™ */ MATCH_SEND_UNICODE("2122",   "tm", "trademark", "trademarked");
+    /* ◉ */ MATCH_SEND_UNICODE("25c9",   "bullet");
+    /* ° */ MATCH_SEND_UNICODE("00b0",   "degree", "degrees", "deg");
+    /* ⌀ */ MATCH_SEND_UNICODE("2300",   "diameter");
+    /* (zero-width joiner) */ MATCH_SEND_UNICODE("200d",   "zwj");
+    /* ඞ */ MATCH_SEND_UNICODE("d9e"   , "amongus", "amogus", "amogos");
+
+    // blocks
+    /* █ */  MATCH_SEND_UNICODE("2588",   "block", "block1", "block1111");
+    /* ▓ */  MATCH_SEND_UNICODE("2593",   "block2");
+    /* ▒ */  MATCH_SEND_UNICODE("2592",   "block3");
+    /* ░ */  MATCH_SEND_UNICODE("2591",   "block4");
+    /* ▘ */  MATCH_SEND_UNICODE("2598",   "block1000");
+    /* ▝ */  MATCH_SEND_UNICODE("259d",   "block0100");
+    /* ▀ */  MATCH_SEND_UNICODE("2580",   "block1100");
+    /* ▖ */  MATCH_SEND_UNICODE("2596",   "block0010");
+    /* ▌ */  MATCH_SEND_UNICODE("258c",   "block1010");
+    /* ▞ */  MATCH_SEND_UNICODE("259e",   "block0110");
+    /* ▛ */  MATCH_SEND_UNICODE("259b",   "block1110");
+    /* ▗ */  MATCH_SEND_UNICODE("2597",   "block0001");
+    /* ▚ */  MATCH_SEND_UNICODE("259a",   "block1001");
+    /* ▐ */  MATCH_SEND_UNICODE("2590",   "block0101");
+    /* ▜ */  MATCH_SEND_UNICODE("259c",   "block1101");
+    /* ▄ */  MATCH_SEND_UNICODE("2584",   "block0011");
+    /* ▙ */  MATCH_SEND_UNICODE("2599",   "block1011");
+    /* ▟ */  MATCH_SEND_UNICODE("259f",   "block0111");
+
+    // clear recorded string
+    memset(recorded_unicode_string, 0, sizeof(recorded_unicode_string));
+}
+
+
+
 void keyboard_post_init_user(void) {
     // enable n-key rollover on startup
     keymap_config.nkro = 1;
@@ -319,6 +463,58 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 return false;
             }
         }
+
+
+        if (unicode_mode) {
+            // hitting space or entershould confirm the unicode input mode
+            if (keycode == KC_SPACE || keycode == KC_ENT) {
+                unicode_mode = false;
+                ParseUnicodeString();
+                return false;
+            }
+            // hitting escape should cancel the unicode input mode
+            if (keycode == KC_ESC) {
+                unicode_mode = false;
+                return false;
+            }
+
+            bool shift_held = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
+
+            if (recorded_unicode_string_index < sizeof(recorded_unicode_string) - 1) {
+                char key = 0;
+                if (keycode >= KC_A && keycode <= KC_Z)
+                    key = (shift_held) ? 'A' + (keycode - KC_A) : 'a' + (keycode - KC_A);
+                else if (keycode >= KC_1 && keycode <= KC_9)
+                    key = '1' + (keycode - KC_1);
+                else if (keycode == KC_0)
+                    key = '0';
+
+                // record key to string if it was a valid key
+                if (key != 0) {
+                    recorded_unicode_string[recorded_unicode_string_index++] = key;
+                    recorded_unicode_string[recorded_unicode_string_index] = '\0'; // null-terminate
+                    return false;
+                }
+                // make stuff like layer changing and holding down shift get through
+                else if (IsIgnoredDuringRecording(keycode) || IS_MODIFIER_KEYCODE(keycode)) {
+                    return true;
+                }
+                // if invalid key pressed then cancel unicode mode
+                else {
+                    unicode_mode = false;
+                    return true;
+                }
+            }
+            // cancel unicode mode if it goes above the max length
+            unicode_mode = false;
+            return true;
+        }
+        if (keycode == CK_UNICODE_MODE) {
+            unicode_mode = true;
+            recorded_unicode_string_index = 0; // reset recorded string
+            return false;
+        }
+
 
         if (keycode == CK_STENO_TOGGLE) {
             layer_invert(_STENO); // toggle the steno layer
