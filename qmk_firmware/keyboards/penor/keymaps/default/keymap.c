@@ -47,7 +47,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ┌─────┬─────┤  W  │  F  │  P  │  B  │           │  J  │  L  │  U  │  Y  ├─────┬─────┐
      * │ TAB │  Q  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  Ö  │  Å  │
      * ├─────┼─────┤  R  │  S  │  T  │  G  │           │  M  │  N  │  E  │  I  ├─────┼─────┤
-     * │L-SFT│  A  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  O  │STENO│
+     * │L-SFT│  A  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  O  │     │
      * ├─────┼─────┤  X  │  C  │  D  │  V  │           │  K  │  H  │  ,  │  .  ├─────┼─────┤
      * │L-CTL│  Z  ├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤ ESC │  Ä  │
      * └─────┴─────┘  │L-ALT│S-GUI│ NAV │SPACE│     │ENTER│SYMBL│BACKS│R-ALT│  └─────┴─────┘
@@ -55,7 +55,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_MAIN] = LAYOUT(
         KC_TAB,  SE_Q, SE_W, SE_F, SE_P, SE_B,       SE_J, SE_L, SE_U,    SE_Y,    SE_ODIA, SE_ARNG,
-        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    CK_STENO_TOGGLE,
+        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    _______,
         KC_LCTL, KC_Z, SE_X, SE_C, SE_D, SE_V,       SE_K, SE_H, SE_COMM, SE_DOT,  KC_ESC,  SE_ADIA,
         KC_LALT, KC_LGUI, QK_TRI_LAYER_UPPER, KC_SPC,KC_ENT, QK_TRI_LAYER_LOWER, KC_BSPC, KC_RALT),
 
@@ -510,8 +510,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 
         if (keycode == CK_STENO_TOGGLE) {
+
             layer_invert(_STENO); // toggle the steno layer
+
             clear_mods(); // make sure that stuff like control isn't held when it does PHROLG, as that could fuck shit up and make a bunch of unintended shortcuts happen
+
             // do PHROLG to toggle Plover
             register_code(KC_E); register_code(KC_R); register_code(KC_F); register_code(KC_V); register_code(KC_O); register_code(KC_L);
             unregister_code(KC_E); unregister_code(KC_R); unregister_code(KC_F); unregister_code(KC_V); unregister_code(KC_O); unregister_code(KC_L);
