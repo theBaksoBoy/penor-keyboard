@@ -31,7 +31,8 @@ unsigned int auto_clicker_button = 1; // what mouse button should the auto click
 #define AUTO_CLICKER_MILLISECONDS_PER_CLICK 34 // 30 clicks per second
 
 bool unicode_mode = false; // when true your key presses get recorded, and then converted into a unicode character if a valid match exists
-char recorded_unicode_string[32];
+#define MAX_RECORDED_UNICODE_STRING_LENGTH 32
+char recorded_unicode_string[MAX_RECORDED_UNICODE_STRING_LENGTH];
 uint8_t recorded_unicode_string_index = 0;
 
 
@@ -65,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ┌─────┬─────┤  Q  │  W  │  E  │  R  │           │  Y  │  U  │  I  │  O  ├─────┬─────┐
      * │ TAB │  T  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  P  │  Å  │
      * ├─────┼─────┤  A  │  S  │  D  │  F  │           │  H  │  J  │  K  │  L  ├─────┼─────┤
-     * │L-SFT│  G  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  Ö  │STENO│
+     * │L-SFT│  G  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  Ö  │     │
      * ├─────┼─────┤  Z  │  X  │  C  │  V  │           │  N  │  M  │  ,  │  .  ├─────┼─────┤
      * │L-CTL│  B  ├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤ ESC │  Ä  │
      * └─────┴─────┘  │L-ALT│S-GUI│ NAV │SPACE│     │ENTER│SYMBL│BACKS│R-ALT│  └─────┴─────┘
@@ -73,7 +74,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_GAMING] = LAYOUT(
         KC_TAB,  SE_T, SE_Q, SE_W, SE_E, SE_R,       SE_Y, SE_U, SE_I,    SE_O,    SE_P,    SE_ARNG,
-        KC_LSFT, SE_G, SE_A, SE_S, SE_D, SE_F,       SE_H, SE_J, SE_K,    SE_L,    SE_ODIA, CK_STENO_TOGGLE,
+        KC_LSFT, SE_G, SE_A, SE_S, SE_D, SE_F,       SE_H, SE_J, SE_K,    SE_L,    SE_ODIA, _______,
         KC_LCTL, KC_B, SE_Z, SE_X, SE_C, SE_V,       SE_N, SE_M, SE_COMM, SE_DOT,  KC_ESC,  SE_ADIA,
         KC_LALT, KC_LGUI, QK_TRI_LAYER_UPPER, KC_SPC,KC_ENT, QK_TRI_LAYER_LOWER, KC_BSPC, KC_RALT),
 
@@ -103,7 +104,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ┌─────┬─────┤HOME │  ↑  │ END │  ▢↑ │           │     │INSRT│     │     ├─────┬─────┐
      * │     │  ⬍↑ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  ◉  │DELAY│
      * ├─────┼─────┤  ←  │  ↓  │  →  │  ▢↓ │           │     │ DEL │KEYML│  .  ├─────┼─────┤
-     * │     │  ⬍↓ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  ▶  │     │
+     * │     │  ⬍↓ ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  ▶  │STENO│
      * ├─────┼─────┤  2  │  3  │  4  │  5  │           │  6  │  7  │  8  │  9  ├─────┼─────┤
      * │     │  1  ├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤  0  │     │
      * └─────┴─────┘  │     │     │     │     │     │     │MOUSE│     │     │  └─────┴─────┘
@@ -111,7 +112,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_NAV] = LAYOUT(
         _______, KC_WH_U, KC_HOME, KC_UP, KC_END, KC_PGUP, _______, KC_INS, _______, _______, _______, CK_MACRO_DELAY,
-        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, KC_DEL, CK_KEY_MULTIPLICATION, SE_DOT, _______, _______,
+        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, KC_DEL, CK_KEY_MULTIPLICATION, SE_DOT, _______, CK_STENO_TOGGLE,
         _______, SE_1, SE_2, SE_3, SE_4, SE_5, SE_6, SE_7, SE_8, SE_9, SE_0, _______,
         _______, _______, _______, _______, _______, _______, _______, _______),
 
@@ -337,29 +338,21 @@ void ParseUnicodeString(void) {
     // greek symbols
     /* α */ MATCH_SEND_UNICODE("3b1",   "alpha");
     /* β */ MATCH_SEND_UNICODE("3b2",   "beta");
-    /* γ */ MATCH_SEND_UNICODE("3b3",   "gamma");
-    /* Γ */ MATCH_SEND_UNICODE("393",   "Gamma");
-    /* δ */ MATCH_SEND_UNICODE("3b4",   "delta");
-    /* Δ */ MATCH_SEND_UNICODE("394",   "Delta");
+    /* γ */ MATCH_SEND_UNICODE("3b3",   "gamma"); /* Γ */ MATCH_SEND_UNICODE("393",   "Gamma");
+    /* δ */ MATCH_SEND_UNICODE("3b4",   "delta"); /* Δ */ MATCH_SEND_UNICODE("394",   "Delta");
     /* ε */ MATCH_SEND_UNICODE("3b5",   "epsilon");
     /* ζ */ MATCH_SEND_UNICODE("3b6",   "zeta");
     /* η */ MATCH_SEND_UNICODE("3b7",   "eta");
-    /* θ */ MATCH_SEND_UNICODE("3b8",   "theta");
-    /* Θ */ MATCH_SEND_UNICODE("398",   "Theta");
+    /* θ */ MATCH_SEND_UNICODE("3b8",   "theta"); /* Θ */ MATCH_SEND_UNICODE("398",   "Theta");
     /* λ */ MATCH_SEND_UNICODE("3bb",   "lambda");
     /* μ */ MATCH_SEND_UNICODE("3bc",   "mu");
-    /* π */ MATCH_SEND_UNICODE("3c0",   "pi");
-    /* Π */ MATCH_SEND_UNICODE("3a0",   "Pi");
+    /* π */ MATCH_SEND_UNICODE("3c0",   "pi"); /* Π */ MATCH_SEND_UNICODE("3a0",   "Pi");
     /* ρ */ MATCH_SEND_UNICODE("3c1",   "rho");
-    /* σ */ MATCH_SEND_UNICODE("3c3",   "sigma");
-    /* Σ */ MATCH_SEND_UNICODE("3a3",   "Sigma");
+    /* σ */ MATCH_SEND_UNICODE("3c3",   "sigma"); /* Σ */ MATCH_SEND_UNICODE("3a3",   "Sigma");
     /* τ */ MATCH_SEND_UNICODE("3c4",   "tau");
-    /* φ */ MATCH_SEND_UNICODE("3c6",   "phi");
-    /* Φ */ MATCH_SEND_UNICODE("3a6",   "Phi");
-    /* ψ */ MATCH_SEND_UNICODE("3c8",   "psi");
-    /* Ψ */ MATCH_SEND_UNICODE("3a8",   "Psi");
-    /* ω */ MATCH_SEND_UNICODE("3c9",   "omega");
-    /* Ω */ MATCH_SEND_UNICODE("3a9",   "Omega");
+    /* φ */ MATCH_SEND_UNICODE("3c6",   "phi"); /* Φ */ MATCH_SEND_UNICODE("3a6",   "Phi");
+    /* ψ */ MATCH_SEND_UNICODE("3c8",   "psi"); /* Ψ */ MATCH_SEND_UNICODE("3a8",   "Psi");
+    /* ω */ MATCH_SEND_UNICODE("3c9",   "omega"); /* Ω */ MATCH_SEND_UNICODE("3a9",   "Omega");
 
     // arrows
     /* ← */ MATCH_SEND_UNICODE("2190",   "leftarrow", "arrowleft", "larrow", "arrowl", "left", "l");
@@ -376,7 +369,7 @@ void ParseUnicodeString(void) {
     /* ⇑ */ MATCH_SEND_UNICODE("21d1",   "Uparrow", "Arrowup", "Uarrow", "Arrowu", "Up", "U");
     /* ⇒ */ MATCH_SEND_UNICODE("21d2",   "Rightarrow", "Arrowright", "Rarrow", "Arrowr", "Right", "R", "implication", "implies");
     /* ⇓ */ MATCH_SEND_UNICODE("21d3",   "Downarrow", "Arrowdown", "Darrow", "Arrowd", "Down", "D");
-    /* ⇔ */ MATCH_SEND_UNICODE("21d4",   "Leftrightarrow", "Arrowleftright", "Lrarrow", "ArrowLR", "Leftright", "Lr", "equivalent", "equivalence");
+    /* ⇔ */ MATCH_SEND_UNICODE("21d4",   "Leftrightarrow", "Arrowleftright", "Lrarrow", "Arrowlr", "Leftright", "Lr", "equivalent", "equivalence");
     /* ⇕ */ MATCH_SEND_UNICODE("21d5",   "Updownarrow", "Arrowupdown", "Udarrow", "Arrowud", "Updown", "Ud");
 
     // misc
@@ -518,6 +511,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         if (keycode == CK_STENO_TOGGLE) {
             layer_invert(_STENO); // toggle the steno layer
+            clear_mods(); // make sure that stuff like control isn't held when it does PHROLG, as that could fuck shit up and make a bunch of unintended shortcuts happen
             // do PHROLG to toggle Plover
             register_code(KC_E); register_code(KC_R); register_code(KC_F); register_code(KC_V); register_code(KC_O); register_code(KC_L);
             unregister_code(KC_E); unregister_code(KC_R); unregister_code(KC_F); unregister_code(KC_V); unregister_code(KC_O); unregister_code(KC_L);
