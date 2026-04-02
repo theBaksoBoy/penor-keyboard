@@ -342,6 +342,9 @@ void ParseUnicodeString(void) {
     /* ≈ */ MATCH_SEND_UNICODE("2248",   "approx", "roughly", "about", "approximately");
     /* ≠ */ MATCH_SEND_UNICODE("2260",   "neq", "not", "isnot", "notequal", "notequalto");
     /* ± */ MATCH_SEND_UNICODE("b1",   "pm", "plusminus");
+    /* × */ MATCH_SEND_UNICODE("00d7",   "mul", "mult", "multiply", "multiplication");
+    /* ≤ */ MATCH_SEND_UNICODE("2264",   "loe", "loeq", "loet", "lessorequal", "lessorequalto");
+    /* ≥ */ MATCH_SEND_UNICODE("2265",   "goe", "goeq", "goet", "greaterorequal");
 
     // greek symbols
     /* α */ MATCH_SEND_UNICODE("3b1",   "alpha");
@@ -385,12 +388,16 @@ void ParseUnicodeString(void) {
     /* É */ MATCH_SEND_UNICODE("c9",   "E");
     /* © */ MATCH_SEND_UNICODE("a9",   "c", "cp", "copyright");
     /* ™ */ MATCH_SEND_UNICODE("2122",   "tm", "trademark", "trademarked");
-    /* ◉ */ MATCH_SEND_UNICODE("25c9",   "bullet");
+    /* • */ MATCH_SEND_UNICODE("2022",   "bullet");
+    /* ◉ */ MATCH_SEND_UNICODE("25c9",   "bigbullet", "emacsbullet", "orgbullet");
     /* ° */ MATCH_SEND_UNICODE("00b0",   "degree", "degrees", "deg");
     /* ⌀ */ MATCH_SEND_UNICODE("2300",   "diameter");
     /* (zero-width joiner) */ MATCH_SEND_UNICODE("200d",   "zwj");
     /* ඞ */ MATCH_SEND_UNICODE("d9e"   , "amongus", "amogus", "amogos");
+    /* – */ MATCH_SEND_UNICODE("2013"   , "en", "endash");
     /* — */ MATCH_SEND_UNICODE("2014"   , "em", "emdash");
+    /* ☐ */ MATCH_SEND_UNICODE("2610"   , "box", "emptybox", "emptycheckbox", "todo");
+    /* ☑ */ MATCH_SEND_UNICODE("2611"   , "checkbox", "checkedbox", "checkedcheckbox", "done");
 
     // blocks
     /* █ */  MATCH_SEND_UNICODE("2588",   "block", "block1", "block1111");
