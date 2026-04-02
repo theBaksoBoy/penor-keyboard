@@ -35,6 +35,14 @@ bool unicode_mode = false; // when true your key presses get recorded, and then 
 char recorded_unicode_string[MAX_RECORDED_UNICODE_STRING_LENGTH];
 uint8_t recorded_unicode_string_index = 0;
 
+bool mouse_u_held = false;
+bool mouse_d_held = false;
+bool mouse_l_held = false;
+bool mouse_r_held = false;
+uint16_t mouse_warping_timer = 0;
+bool mouse_warping_timer_running = false; // this is needed as timers overflow after around 65 seconds. This is used to avoid issues related to that
+#define MOUSE_WARPING_DELAY 100 // how many milliseconds until the mouse warps in the held direction after all mouse direction keys are released
+
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -431,6 +439,44 @@ void matrix_scan_user(void) {
             auto_clicker_click_count--;
         auto_clicker_timer = timer_read(); // reset timer
     }
+
+
+    if (mouse_warping_timer_running && timer_elapsed(mouse_warping_timer) >= MOUSE_WARPING_DELAY) {
+
+        mouse_warping_timer_running = false;
+
+        // don't run if both up and down is held down at the same time
+        if (!(mouse_u_held && mouse_d_held)) {
+            if (mouse_u_held) {
+                report_mouse_t mouse_report = {};
+                mouse_report.y = -127;
+                for (int i = 0; i < 35; i++)
+                    host_mouse_send(&mouse_report);
+            }
+            if (mouse_d_held) {
+                report_mouse_t mouse_report = {};
+                mouse_report.y = 127;
+                for (int i = 0; i < 35; i++)
+                    host_mouse_send(&mouse_report);
+            }
+        }
+
+        // don't run if both left and right is held down at the same time
+        if (!(mouse_l_held && mouse_r_held)) {
+            if (mouse_l_held) {
+                report_mouse_t mouse_report = {};
+                mouse_report.x = -127;
+                for (int i = 0; i < 35; i++)
+                    host_mouse_send(&mouse_report);
+            }
+            if (mouse_r_held) {
+                report_mouse_t mouse_report = {};
+                mouse_report.x = 127;
+                for (int i = 0; i < 35; i++)
+                    host_mouse_send(&mouse_report);
+            }
+        }
+    }
 }
 
 
@@ -438,9 +484,8 @@ void matrix_scan_user(void) {
 // do stuff whenever keys get pressed down
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
-    if (record->event.pressed) { // if any key was pressed down
-
-
+    // logic to run when a key is pressed down
+    if (record->event.pressed) {
 
         if (key_multiplication_mode_active) {
             return KeyMultiplicationModeLogic(keycode);
@@ -520,9 +565,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_E); unregister_code(KC_R); unregister_code(KC_F); unregister_code(KC_V); unregister_code(KC_O); unregister_code(KC_L);
             return false;
         }
-
-
     }
+
+
+    // logic to run when a key is released
+    else {
+
+        // if all mouse direction keys WERE held down, where one of the keys was just released
+        if ((mouse_u_held && mouse_d_held && mouse_l_held && mouse_r_held) && (keycode == KC_MS_U || keycode == KC_MS_D || keycode == KC_MS_L || keycode == KC_MS_R)) {
+            mouse_warping_timer = timer_read();
+            mouse_warping_timer_running = true;
+        }
+    }
+
+
+
+    // store the held-down state of the keys used to control the mouse position
+    // this is done after all the other key logic as it needs to detect if all mouse direction keys WERE held down when one gets released
+    switch (keycode) {
+        case KC_MS_U: mouse_u_held = record->event.pressed; break;
+        case KC_MS_D: mouse_d_held = record->event.pressed; break;
+        case KC_MS_L: mouse_l_held = record->event.pressed; break;
+        case KC_MS_R: mouse_r_held = record->event.pressed; break;
+    }
+
+
 
     return true;
 }
