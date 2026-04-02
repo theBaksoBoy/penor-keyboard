@@ -390,6 +390,7 @@ void ParseUnicodeString(void) {
     /* ⌀ */ MATCH_SEND_UNICODE("2300",   "diameter");
     /* (zero-width joiner) */ MATCH_SEND_UNICODE("200d",   "zwj");
     /* ඞ */ MATCH_SEND_UNICODE("d9e"   , "amongus", "amogus", "amogos");
+    /* — */ MATCH_SEND_UNICODE("2014"   , "em", "emdash");
 
     // blocks
     /* █ */  MATCH_SEND_UNICODE("2588",   "block", "block1", "block1111");
