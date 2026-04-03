@@ -9,14 +9,48 @@
 
 
 
-enum layer_number {_MAIN = 0, _GAMING, _SYMBOL, _NAV, _MOUSE, _STENO};
+enum layer_number {_MAIN = 0, _GAMING, _SYMBOL, _NAV, _MOUSE, _STENO, _WORD};
 
 enum custom_keycodes {
     CK_MANUAL = SAFE_RANGE,
     CK_STENO_TOGGLE,
     CK_KEY_MULTIPLICATION,
     CK_UNICODE_MODE,
+    CK_MACRO_RECORD,
+    CK_MACRO_PLAY,
     CK_MACRO_DELAY,
+
+    // word macros
+    WM_WHICH,
+    WM_WITH,
+    WM_FROM,
+    WM_RE,
+    WM_T,
+    WM_WHEN,
+    WM_ABOUT,
+    WM_BUT,
+    WM_OULD,
+    WM_JUST,
+    WM_AND,
+    WM_S,
+    WM_THINK,
+    WM_THE,
+    WM_THAT,
+    WM_HAVE,
+    WM_YOU,
+    WM_FOR,
+    WM_LL,
+    WM_KNOW,
+    WM_BECAUSE,
+    WM_WHAT,
+    WM_CAN,
+    WM_WILL,
+    WM_THIS,
+    WM_NT,
+    WM_NOT,
+    WM_LIKE,
+    WM_MAKE,
+    WM_IM,
 };
 
 
@@ -43,6 +77,16 @@ uint16_t mouse_warping_timer = 0;
 bool mouse_warping_timer_running = false; // this is needed as timers overflow after around 65 seconds. This is used to avoid issues related to that
 #define MOUSE_WARPING_DELAY 100 // how many milliseconds until the mouse warps in the held direction after all mouse direction keys are released
 
+typedef struct {
+    uint16_t keycode;
+    bool is_pressed; // true = pressed, false = released. This is only relevant for modifier keys, as normal keys don't need to track when they are released
+    bool is_modifier;
+} macro_event_t; // struct used for every recorded key press when recording macros. Is used instead of just the keycode as modifier keys need to store both when they are pressed down and released
+static bool recording_macro = false;
+#define MAX_MACRO_LENGTH 256
+macro_event_t macro_buffer[MAX_MACRO_LENGTH];
+static uint8_t macro_buffer_index = 0; // both to keep track of what index in the buffer you are in when recording, but also to store the length of the macro when playing it back
+
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -55,7 +99,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * ┌─────┬─────┤  W  │  F  │  P  │  B  │           │  J  │  L  │  U  │  Y  ├─────┬─────┐
      * │ TAB │  Q  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  Ö  │  Å  │
      * ├─────┼─────┤  R  │  S  │  T  │  G  │           │  M  │  N  │  E  │  I  ├─────┼─────┤
-     * │L-SFT│  A  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  O  │     │
+     * │L-SFT│  A  ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤  O  │WORD │
      * ├─────┼─────┤  X  │  C  │  D  │  V  │           │  K  │  H  │  ,  │  .  ├─────┼─────┤
      * │L-CTL│  Z  ├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤ ESC │  Ä  │
      * └─────┴─────┘  │L-ALT│S-GUI│ NAV │SPACE│     │ENTER│SYMBL│BACKS│R-ALT│  └─────┴─────┘
@@ -63,7 +107,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_MAIN] = LAYOUT(
         KC_TAB,  SE_Q, SE_W, SE_F, SE_P, SE_B,       SE_J, SE_L, SE_U,    SE_Y,    SE_ODIA, SE_ARNG,
-        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    _______,
+        KC_LSFT, SE_A, SE_R, SE_S, SE_T, SE_G,       SE_M, SE_N, SE_E,    SE_I,    SE_O,    MO(_WORD),
         KC_LCTL, KC_Z, SE_X, SE_C, SE_D, SE_V,       SE_K, SE_H, SE_COMM, SE_DOT,  KC_ESC,  SE_ADIA,
         KC_LALT, KC_LGUI, QK_TRI_LAYER_UPPER, KC_SPC,KC_ENT, QK_TRI_LAYER_LOWER, KC_BSPC, KC_RALT),
 
@@ -119,8 +163,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                └─────┴─────┴─────┴─────┘     └─────┴─────┴─────┴─────┘
      */
     [_NAV] = LAYOUT(
-        _______, KC_WH_U, KC_HOME, KC_UP, KC_END, KC_PGUP, _______, KC_INS, _______, _______, _______, CK_MACRO_DELAY,
-        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, KC_DEL, CK_KEY_MULTIPLICATION, SE_DOT, _______, CK_STENO_TOGGLE,
+        _______, KC_WH_U, KC_HOME, KC_UP, KC_END, KC_PGUP, _______, KC_INS, _______, _______, CK_MACRO_RECORD, CK_MACRO_DELAY,
+        _______, KC_WH_D, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, KC_DEL, CK_KEY_MULTIPLICATION, SE_DOT, CK_MACRO_PLAY, CK_STENO_TOGGLE,
         _______, SE_1, SE_2, SE_3, SE_4, SE_5, SE_6, SE_7, SE_8, SE_9, SE_0, _______,
         _______, _______, _______, _______, _______, _______, _______, _______),
 
@@ -161,6 +205,25 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, SE_A, SE_S, SE_D, SE_F, SE_G, SE_H, SE_J, SE_K, SE_L, SE_X, SE_B,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
                           _______, _______, SE_C, SE_V, SE_N, SE_M, CK_STENO_TOGGLE, _______),
+
+
+    // ────────────────────────────────────────────────────────────────────────────────────────────
+    /* WORD
+     *             ┌─────┬─────┬─────┬─────┐           ┌─────┬─────┬─────┬─────┐
+     * ┌─────┬─────┤with │from │ \re │ 't  │           │when │about│ but │ould ├─────┬─────┐
+     * │     │which├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤just │     │
+     * ├─────┼─────┤ 's  │ can │ the │that │           │have │ you │ for │ 'll ├─────┼─────┤
+     * │     │ and ├─────┼─────┼─────┼─────┤           ├─────┼─────┼─────┼─────┤ I'm │     │
+     * ├─────┼─────┤what │think│will │this │           │ n't │ not │like │make ├─────┼─────┤
+     * │     │beca-├──┬──┴──┬──┴──┬──┴──┬──┴──┐     ┌──┴──┬──┴──┬──┴──┬──┴──┬──┤know │     │
+     * └─────┴─────┘  │     │     │     │     │     │     │     │     │     │  └─────┴─────┘
+     *                └─────┴─────┴─────┴─────┘     └─────┴─────┴─────┴─────┘
+     */
+    [_WORD] = LAYOUT(
+        _______, WM_WHICH, WM_WITH, WM_FROM, WM_RE, WM_T, WM_WHEN, WM_ABOUT, WM_BUT, WM_OULD, WM_JUST, _______,
+        _______, WM_AND, WM_S, WM_CAN, WM_THE, WM_THAT, WM_HAVE, WM_YOU, WM_FOR, WM_LL, WM_IM, _______,
+        _______, WM_BECAUSE, WM_WHAT, WM_THINK, WM_WILL, WM_THIS, WM_NT, WM_NOT, WM_LIKE, WM_MAKE, WM_KNOW, _______,
+                          _______, _______, _______, _______, _______, _______, _______, _______),
 };
 
 
@@ -344,7 +407,7 @@ void ParseUnicodeString(void) {
     /* ± */ MATCH_SEND_UNICODE("b1",   "pm", "plusminus");
     /* × */ MATCH_SEND_UNICODE("00d7",   "mul", "mult", "multiply", "multiplication");
     /* ≤ */ MATCH_SEND_UNICODE("2264",   "loe", "loeq", "loet", "lessorequal", "lessorequalto");
-    /* ≥ */ MATCH_SEND_UNICODE("2265",   "goe", "goeq", "goet", "greaterorequal");
+    /* ≥ */ MATCH_SEND_UNICODE("2265",   "goe", "goeq", "goet", "greaterorequal", "greaterorequalto", "moe", "moeq", "moet", "moreorequal", "moreorequalto");
 
     // greek symbols
     /* α */ MATCH_SEND_UNICODE("3b1",   "alpha");
@@ -425,6 +488,27 @@ void ParseUnicodeString(void) {
 
 
 
+void PlayMacro(void) {
+
+    // loop through each item in the macro buffer until getting to the macro buffer index, which is the end of the macro
+    for (uint8_t i = 0; i < macro_buffer_index; i++) {
+
+        macro_event_t macro_event = macro_buffer[i];
+
+        if (macro_event.is_modifier) {
+            if (macro_event.is_pressed)
+                register_code(macro_event.keycode);
+            else
+                unregister_code(macro_event.keycode);
+
+        } else {
+            fixed_tap_code(macro_event.keycode);
+        }
+    }
+}
+
+
+
 void keyboard_post_init_user(void) {
     // enable n-key rollover on startup
     keymap_config.nkro = 1;
@@ -491,6 +575,34 @@ void matrix_scan_user(void) {
 
 // do stuff whenever keys get pressed down
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+    // stuff for storing inputs when recording a macro
+    if (recording_macro) {
+
+        if (IS_MODIFIER_KEYCODE(keycode)) { // modifiers need to record both when they are pressed down and when they are released
+            macro_buffer[macro_buffer_index] = (macro_event_t){
+                .keycode = keycode,
+                .is_pressed = record->event.pressed,
+                .is_modifier = true
+            };
+            if (macro_buffer_index == MAX_MACRO_LENGTH - 1)
+                recording_macro = false; // stop recording if it has reached the max macro length
+            else
+                macro_buffer_index++;
+        }
+        else if (record->event.pressed && keycode != CK_MACRO_RECORD && keycode != CK_MACRO_PLAY) { // when a key is pressed down that IS NOT any of the macro keys, as that is a recipe for disaster
+            macro_buffer[macro_buffer_index] = (macro_event_t){
+                .keycode = keycode,
+                .is_pressed = true,
+                .is_modifier = false
+            };
+            if (macro_buffer_index == MAX_MACRO_LENGTH - 1)
+                recording_macro = false; // stop recording if it has reached the max macro length
+            else
+                macro_buffer_index++;
+        }
+    }
+
 
     // logic to run when a key is pressed down
     if (record->event.pressed) {
@@ -573,6 +685,62 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             unregister_code(KC_E); unregister_code(KC_R); unregister_code(KC_F); unregister_code(KC_V); unregister_code(KC_O); unregister_code(KC_L);
             return false;
         }
+
+        if (keycode == CK_MACRO_RECORD) {
+            macro_buffer_index = 0;
+            recording_macro = true;
+        }
+
+        if (keycode == CK_MACRO_PLAY) {
+            if (recording_macro) {
+                recording_macro = false;
+            }
+            else {
+                PlayMacro();
+            }
+        }
+
+        const bool shiftHeld = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
+        // temporarily store and clear mods so that they don't affect the sent strings
+        const uint8_t mods = get_mods();
+        clear_mods();
+        // logic for typing out word macros
+        switch (keycode) {
+            // checks if macros are being pressed. Note that CAPS LOCK is not checked for as it will
+            // go to the non-shift block, where CAPS LOCK will automatically shift the case for the letters
+            case WM_WHICH: if (shiftHeld) SEND_STRING("Which"); else SEND_STRING("which"); break;
+            case WM_WITH: if (shiftHeld) SEND_STRING("With"); else SEND_STRING("with"); break;
+            case WM_FROM: if (shiftHeld) SEND_STRING("From"); else SEND_STRING("from"); break;
+            case WM_RE: if (shiftHeld) SEND_STRING("'re"); else SEND_STRING("'re"); break;
+            case WM_T: if (shiftHeld) SEND_STRING("'t"); else SEND_STRING("'t"); break;
+            case WM_WHEN: if (shiftHeld) SEND_STRING("When"); else SEND_STRING("when"); break;
+            case WM_ABOUT: if (shiftHeld) SEND_STRING("About"); else SEND_STRING("about"); break;
+            case WM_BUT: if (shiftHeld) SEND_STRING("But"); else SEND_STRING("but"); break;
+            case WM_OULD: if (shiftHeld) SEND_STRING("ould"); else SEND_STRING("ould"); break;
+            case WM_JUST: if (shiftHeld) SEND_STRING("Just"); else SEND_STRING("just"); break;
+            case WM_AND: if (shiftHeld) SEND_STRING("And"); else SEND_STRING("and"); break;
+            case WM_S: if (shiftHeld) SEND_STRING("'s"); else SEND_STRING("'s"); break;
+            case WM_THINK: if (shiftHeld) SEND_STRING("Think"); else SEND_STRING("think"); break;
+            case WM_THE: if (shiftHeld) SEND_STRING("The"); else SEND_STRING("the"); break;
+            case WM_THAT: if (shiftHeld) SEND_STRING("That"); else SEND_STRING("that"); break;
+            case WM_HAVE: if (shiftHeld) SEND_STRING("Have"); else SEND_STRING("have"); break;
+            case WM_YOU: if (shiftHeld) SEND_STRING("You"); else SEND_STRING("you"); break;
+            case WM_FOR: if (shiftHeld) SEND_STRING("For"); else SEND_STRING("for"); break;
+            case WM_LL: if (shiftHeld) SEND_STRING("'ll"); else SEND_STRING("'ll"); break;
+            case WM_KNOW: if (shiftHeld) SEND_STRING("Know"); else SEND_STRING("know"); break;
+            case WM_BECAUSE: if (shiftHeld) SEND_STRING("Because"); else SEND_STRING("because"); break;
+            case WM_WHAT: if (shiftHeld) SEND_STRING("What"); else SEND_STRING("what"); break;
+            case WM_CAN: if (shiftHeld) SEND_STRING("Can"); else SEND_STRING("can"); break;
+            case WM_WILL: if (shiftHeld) SEND_STRING("Will"); else SEND_STRING("will"); break;
+            case WM_THIS: if (shiftHeld) SEND_STRING("This"); else SEND_STRING("this"); break;
+            case WM_NT: if (shiftHeld) SEND_STRING("n't"); else SEND_STRING("n't"); break;
+            case WM_NOT: if (shiftHeld) SEND_STRING("Not"); else SEND_STRING("not"); break;
+            case WM_LIKE: if (shiftHeld) SEND_STRING("Like"); else SEND_STRING("like"); break;
+            case WM_MAKE: if (shiftHeld) SEND_STRING("Make"); else SEND_STRING("make"); break;
+            case WM_IM: if (shiftHeld) SEND_STRING("I'm"); else SEND_STRING("I'm"); break;
+        }
+        // set mods back to what they were before they were temporarily cleared
+        set_mods(mods);
     }
 
 
