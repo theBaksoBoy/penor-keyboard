@@ -66,4 +66,5 @@ The following files will be found in case/models/
 1. Use QMK Firmware 0.23.7. Different versions might work, however it should for sure work on this version.
 2. copy over the directory qmk_firmware/... to the directory where your qmk_firmware is located, making it so that the penor/... is inside of your qmk_firmware/keyboards.
 3. Make sure that your working directory in the terminal is the qmk_firmware directory, and then run the command
+
     make penor:default
