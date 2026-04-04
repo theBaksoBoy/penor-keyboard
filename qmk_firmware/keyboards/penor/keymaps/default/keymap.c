@@ -88,6 +88,7 @@ static bool recording_macro = false;
 #define MAX_MACRO_LENGTH 256
 macro_event_t macro_buffer[MAX_MACRO_LENGTH];
 static uint8_t macro_buffer_index = 0; // both to keep track of what index in the buffer you are in when recording, but also to store the length of the macro when playing it back
+void PlayMacro(void); // gotta declare it at the start or it will start screaming
 
 
 
@@ -241,6 +242,11 @@ void fixed_tap_code(uint16_t keycode) {
         // wait for 0.25 seconds when getting to this keycode. Used when macros need a delay between presses to for example wait for animations to finish first
         case CK_MACRO_DELAY:
             wait_ms(250);
+            break;
+
+        // make it so that the macro playing key can be multiplied with the key multiplication feature
+        case CK_MACRO_PLAY:
+            PlayMacro();
             break;
 
         // Swedish keycodes for characters don't work as they do special logic like holding down shift whilst pressing 6 and shit like that which doesn't work in tap_code().
