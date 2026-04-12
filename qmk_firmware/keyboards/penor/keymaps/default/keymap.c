@@ -74,9 +74,16 @@ bool mouse_u_held = false;
 bool mouse_d_held = false;
 bool mouse_l_held = false;
 bool mouse_r_held = false;
-uint16_t mouse_warping_timer = 0;
-bool mouse_warping_timer_running = false; // this is needed as timers overflow after around 65 seconds. This is used to avoid issues related to that
-#define MOUSE_WARPING_DELAY 100 // how many milliseconds until the mouse warps in the held direction after all mouse direction keys are released
+uint16_t mouse_warping_timer_u = 0;
+uint16_t mouse_warping_timer_d = 0;
+uint16_t mouse_warping_timer_l = 0;
+uint16_t mouse_warping_timer_r = 0;
+// these are needed as timers overflow after around 65 seconds. This is used to avoid issues related to that
+bool mouse_warping_timer_u_running = false;
+bool mouse_warping_timer_d_running = false;
+bool mouse_warping_timer_l_running = false;
+bool mouse_warping_timer_r_running = false;
+#define MOUSE_WARPING_TAP_INTERVAL 145 // how quickly you have to double-tap for it to activate a warp
 
 typedef struct {
     uint16_t keycode;
@@ -540,42 +547,15 @@ void matrix_scan_user(void) {
     }
 
 
-    if (mouse_warping_timer_running && timer_elapsed(mouse_warping_timer) >= MOUSE_WARPING_DELAY) {
-
-        mouse_warping_timer_running = false;
-
-        // don't run if both up and down is held down at the same time
-        if (!(mouse_u_held && mouse_d_held)) {
-            if (mouse_u_held) {
-                report_mouse_t mouse_report = {};
-                mouse_report.y = -127;
-                for (int i = 0; i < 35; i++)
-                    host_mouse_send(&mouse_report);
-            }
-            if (mouse_d_held) {
-                report_mouse_t mouse_report = {};
-                mouse_report.y = 127;
-                for (int i = 0; i < 35; i++)
-                    host_mouse_send(&mouse_report);
-            }
-        }
-
-        // don't run if both left and right is held down at the same time
-        if (!(mouse_l_held && mouse_r_held)) {
-            if (mouse_l_held) {
-                report_mouse_t mouse_report = {};
-                mouse_report.x = -127;
-                for (int i = 0; i < 35; i++)
-                    host_mouse_send(&mouse_report);
-            }
-            if (mouse_r_held) {
-                report_mouse_t mouse_report = {};
-                mouse_report.x = 127;
-                for (int i = 0; i < 35; i++)
-                    host_mouse_send(&mouse_report);
-            }
-        }
-    }
+    // set mouse warping timers as not running if the timers go above the warping tap interval to avoid timer overflows
+    if (mouse_warping_timer_u_running && timer_elapsed(mouse_warping_timer_u) >= MOUSE_WARPING_TAP_INTERVAL)
+        mouse_warping_timer_u_running = false;
+    if (mouse_warping_timer_d_running && timer_elapsed(mouse_warping_timer_d) >= MOUSE_WARPING_TAP_INTERVAL)
+        mouse_warping_timer_d_running = false;
+    if (mouse_warping_timer_l_running && timer_elapsed(mouse_warping_timer_l) >= MOUSE_WARPING_TAP_INTERVAL)
+        mouse_warping_timer_l_running = false;
+    if (mouse_warping_timer_r_running && timer_elapsed(mouse_warping_timer_r) >= MOUSE_WARPING_TAP_INTERVAL)
+        mouse_warping_timer_r_running = false;
 }
 
 
@@ -707,6 +687,49 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
         }
 
+
+        // mouse warping stuff
+        if (keycode == KC_MS_U) {
+            if (mouse_warping_timer_u_running) {
+                report_mouse_t mouse_report = {};
+                mouse_report.y = -127;
+                for (int i = 0; i < 35; i++)
+                    host_mouse_send(&mouse_report);
+            }
+            mouse_warping_timer_u = timer_read();
+            mouse_warping_timer_u_running = true;
+        }
+        if (keycode == KC_MS_D) {
+            if (mouse_warping_timer_d_running) {
+                report_mouse_t mouse_report = {};
+                mouse_report.y = 127;
+                for (int i = 0; i < 35; i++)
+                    host_mouse_send(&mouse_report);
+            }
+            mouse_warping_timer_d = timer_read();
+            mouse_warping_timer_d_running = true;
+        }
+        if (keycode == KC_MS_L) {
+            if (mouse_warping_timer_l_running) {
+                report_mouse_t mouse_report = {};
+                mouse_report.x = -127;
+                for (int i = 0; i < 35; i++)
+                    host_mouse_send(&mouse_report);
+            }
+            mouse_warping_timer_l = timer_read();
+            mouse_warping_timer_l_running = true;
+        }
+        if (keycode == KC_MS_R) {
+            if (mouse_warping_timer_r_running) {
+                report_mouse_t mouse_report = {};
+                mouse_report.x = 127;
+                for (int i = 0; i < 35; i++)
+                    host_mouse_send(&mouse_report);
+            }
+            mouse_warping_timer_r = timer_read();
+            mouse_warping_timer_r_running = true;
+        }
+
         const bool shiftHeld = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
         // temporarily store and clear mods so that they don't affect the sent strings
         const uint8_t mods = get_mods();
@@ -748,17 +771,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         // set mods back to what they were before they were temporarily cleared
         set_mods(mods);
-    }
-
-
-    // logic to run when a key is released
-    else {
-
-        // if all mouse direction keys WERE held down, where one of the keys was just released
-        if ((mouse_u_held && mouse_d_held && mouse_l_held && mouse_r_held) && (keycode == KC_MS_U || keycode == KC_MS_D || keycode == KC_MS_L || keycode == KC_MS_R)) {
-            mouse_warping_timer = timer_read();
-            mouse_warping_timer_running = true;
-        }
     }
 
 
