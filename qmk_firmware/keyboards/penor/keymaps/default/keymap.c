@@ -461,40 +461,40 @@ void ParseUnicodeString(void) {
     /* ⇕ */ MATCH_SEND_UNICODE("21d5",   "Updownarrow", "Arrowupdown", "Udarrow", "Arrowud", "Updown", "Ud");
 
     // misc
-    /* é */ MATCH_SEND_UNICODE("e9",   "e");
-    /* É */ MATCH_SEND_UNICODE("c9",   "E");
-    /* © */ MATCH_SEND_UNICODE("a9",   "c", "cp", "copyright");
+    /* é */ MATCH_SEND_UNICODE("e9",     "e");
+    /* É */ MATCH_SEND_UNICODE("c9",     "E");
+    /* © */ MATCH_SEND_UNICODE("a9",     "c", "cp", "copyright");
     /* ™ */ MATCH_SEND_UNICODE("2122",   "tm", "trademark", "trademarked");
     /* • */ MATCH_SEND_UNICODE("2022",   "bullet");
     /* ◉ */ MATCH_SEND_UNICODE("25c9",   "bigbullet", "emacsbullet", "orgbullet");
     /* ° */ MATCH_SEND_UNICODE("00b0",   "degree", "degrees", "deg");
     /* ⌀ */ MATCH_SEND_UNICODE("2300",   "diameter");
     /* (zero-width joiner) */ MATCH_SEND_UNICODE("200d",   "zwj");
-    /* ඞ */ MATCH_SEND_UNICODE("d9e"   , "amongus", "amogus", "amogos");
-    /* – */ MATCH_SEND_UNICODE("2013"   , "en", "endash");
-    /* — */ MATCH_SEND_UNICODE("2014"   , "em", "emdash");
-    /* ☐ */ MATCH_SEND_UNICODE("2610"   , "box", "emptybox", "emptycheckbox", "todo");
-    /* ☑ */ MATCH_SEND_UNICODE("2611"   , "checkbox", "checkedbox", "checkedcheckbox", "done");
+    /* ඞ */ MATCH_SEND_UNICODE("d9e",   "amongus", "amogus", "amogos");
+    /* – */ MATCH_SEND_UNICODE("2013",   "en", "endash");
+    /* — */ MATCH_SEND_UNICODE("2014",   "em", "emdash");
+    /* ☐ */ MATCH_SEND_UNICODE("2610",   "box", "emptybox", "emptycheckbox", "todo");
+    /* ☑ */ MATCH_SEND_UNICODE("2611",   "checkbox", "checkedbox", "checkedcheckbox", "done", "check");
 
     // blocks
-    /* █ */  MATCH_SEND_UNICODE("2588",   "block", "block1", "block1111");
-    /* ▓ */  MATCH_SEND_UNICODE("2593",   "block2");
-    /* ▒ */  MATCH_SEND_UNICODE("2592",   "block3");
-    /* ░ */  MATCH_SEND_UNICODE("2591",   "block4");
-    /* ▘ */  MATCH_SEND_UNICODE("2598",   "block1000");
-    /* ▝ */  MATCH_SEND_UNICODE("259d",   "block0100");
-    /* ▀ */  MATCH_SEND_UNICODE("2580",   "block1100");
-    /* ▖ */  MATCH_SEND_UNICODE("2596",   "block0010");
-    /* ▌ */  MATCH_SEND_UNICODE("258c",   "block1010");
-    /* ▞ */  MATCH_SEND_UNICODE("259e",   "block0110");
-    /* ▛ */  MATCH_SEND_UNICODE("259b",   "block1110");
-    /* ▗ */  MATCH_SEND_UNICODE("2597",   "block0001");
-    /* ▚ */  MATCH_SEND_UNICODE("259a",   "block1001");
-    /* ▐ */  MATCH_SEND_UNICODE("2590",   "block0101");
-    /* ▜ */  MATCH_SEND_UNICODE("259c",   "block1101");
-    /* ▄ */  MATCH_SEND_UNICODE("2584",   "block0011");
-    /* ▙ */  MATCH_SEND_UNICODE("2599",   "block1011");
-    /* ▟ */  MATCH_SEND_UNICODE("259f",   "block0111");
+    /* █ */  MATCH_SEND_UNICODE("2588",  "block", "block1", "block1111");
+    /* ▓ */  MATCH_SEND_UNICODE("2593",  "block2");
+    /* ▒ */  MATCH_SEND_UNICODE("2592",  "block3");
+    /* ░ */  MATCH_SEND_UNICODE("2591",  "block4");
+    /* ▘ */  MATCH_SEND_UNICODE("2598",  "block1000");
+    /* ▝ */  MATCH_SEND_UNICODE("259d",  "block0100");
+    /* ▀ */  MATCH_SEND_UNICODE("2580",  "block1100");
+    /* ▖ */  MATCH_SEND_UNICODE("2596",  "block0010");
+    /* ▌ */  MATCH_SEND_UNICODE("258c",  "block1010");
+    /* ▞ */  MATCH_SEND_UNICODE("259e",  "block0110");
+    /* ▛ */  MATCH_SEND_UNICODE("259b",  "block1110");
+    /* ▗ */  MATCH_SEND_UNICODE("2597",  "block0001");
+    /* ▚ */  MATCH_SEND_UNICODE("259a",  "block1001");
+    /* ▐ */  MATCH_SEND_UNICODE("2590",  "block0101");
+    /* ▜ */  MATCH_SEND_UNICODE("259c",  "block1101");
+    /* ▄ */  MATCH_SEND_UNICODE("2584",  "block0011");
+    /* ▙ */  MATCH_SEND_UNICODE("2599",  "block1011");
+    /* ▟ */  MATCH_SEND_UNICODE("259f",  "block0111");
 
     // clear recorded string
     memset(recorded_unicode_string, 0, sizeof(recorded_unicode_string));
