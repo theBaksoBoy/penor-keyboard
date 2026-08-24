@@ -58,6 +58,7 @@ enum custom_keycodes {
 
 bool key_multiplication_mode_active = false; // are you in the mode where you type out numbers to determine how many times a key should repeat?
 unsigned int key_multiplication_count = 0; // how many times should a key be made to repeat?
+bool ignore_next_key_release = false; // thing needed to make mouse keys able to be held by key multiplication
 #define MAX_KEY_MULTIPLICATION_COUNT 100
 
 int auto_clicker_click_count = 0; // if 0 then don't click. if > 0 then click and decrement value. if < 0 then keep clicking endlessly
@@ -348,7 +349,16 @@ bool KeyMultiplicationModeLogic(uint16_t keycode) {
         if (keycode == KC_BTN1) auto_clicker_button = 1;
         if (keycode == KC_BTN2) auto_clicker_button = 2;
         if (keycode == KC_BTN3) auto_clicker_button = 3;
-        auto_clicker_click_count = (key_multiplication_count == 0) ? -1 : key_multiplication_count;
+
+        if (key_multiplication_count == 1) {
+            // hold down the mouse button
+            register_code(keycode);
+            ignore_next_key_release = true;
+        }
+        else {
+            auto_clicker_click_count = (key_multiplication_count == 0) ? -1 : key_multiplication_count;
+        }
+
         key_multiplication_mode_active = false;
         return false;
     }
@@ -562,6 +572,13 @@ void matrix_scan_user(void) {
 
 // do stuff whenever keys get pressed down
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+    if (!record->event.pressed && ignore_next_key_release) {
+        ignore_next_key_release = false;
+        return false;
+    }
+    ignore_next_key_release = false;
+
 
     // stuff for storing inputs when recording a macro
     if (recording_macro) {
